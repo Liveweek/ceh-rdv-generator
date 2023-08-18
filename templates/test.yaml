@@ -1,0 +1,517 @@
+schema_version: '1.0'
+type: MART
+name: {{ mart }} # mart_payment_retailmoneytransferorder_trns
+schema: rdv
+
+columns:
+  - name: effective_date
+    type: DATE
+    nullable: false
+  - name: hash_diff
+    type: TEXT
+    nullable: false
+  - name: src_cd
+    type: TEXT
+    nullable: false
+  - name: version_id
+    type: BIGINT
+    nullable: false
+  - name: deleted_flg
+    type: BOOLEAN
+    nullable: false
+  - name: valid_flg
+    type: BOOLEAN
+    nullable: false
+  - name: invalid_id
+    type: BIGINT
+    nullable: false
+
+
+
+
+
+
+  - name: retailmoneytransferorder_guid_dk
+    type: TEXT
+    nullable: false
+
+  - name: type_retailmoneytransferstarteventtypevalues
+    type: TEXT
+
+  - name: event_id_eventidentifier_id
+    type: TEXT
+
+  - name: event_id_eventidentifier_eventtime
+    type: TIMESTAMP
+
+  - name: event_id_eventidentifier_systemcode
+    type: TEXT
+
+  - name: gen_customer_id_guid
+    type: TEXT
+
+  - name: retailmoneycustomerref_id_id_rk
+    type: BIGINT
+    nullable: false
+
+  - name: retailmoneycustomerref_id_id
+    type: TEXT
+
+  - name: retailmoneycustomerref_id_systemcode
+    type: TEXT
+
+  - name: retailmoneycustomerref_id_version
+    type: BIGINT
+
+  - name: retailmoneycustomerref_id_updatetime
+    type: TIMESTAMP
+
+  - name: retailmoneycustomerref_id_createtime
+    type: TIMESTAMP
+
+  - name: gen_employee_id_guid
+    type: TEXT
+
+  - name: retailmoneytransferemployeeref_id_id_rk
+    type: BIGINT
+    nullable: false
+
+  - name: retailmoneytransferemployeeref_id_id
+    type: TEXT
+
+  - name: retailmoneytransferemployeeref_id_systemcode
+    type: TEXT
+
+  - name: retailmoneytransferemployeeref_id_version
+    type: BIGINT
+
+  - name: retailmoneytransferemployeeref_id_updatetime
+    type: TIMESTAMP
+
+  - name: retailmoneytransferemployeeref_id_createtime
+    type: TIMESTAMP
+
+  - name: type_retailmoneytransferordertypevalues
+    type: TEXT
+
+  - name: status_retailmoneytransferorderstatusvalues
+    type: TEXT
+
+  - name: channel_retailmoneytransferchannelvalues
+    type: TEXT
+
+  - name: promocode
+    type: TEXT
+
+  - name: fxrate_rate
+    type: BIGINT
+
+  - name: fxrate_currencyfrom_currencycode
+    type: TEXT
+
+  - name: fxrate_currencyto_currencycode
+    type: TEXT
+
+  - name: direction_retailmoneytransferorderdirectionvalues
+    type: TEXT
+
+  - name: source_retailmoneytransfersource_amount bigint
+
+  - name: source_retailmoneytransfersource_currency_code_rk
+    type: BIGINT
+    nullable: false
+
+  - name: source_retailmoneytransfersource_currency_code
+    type: TEXT
+    nullable: false
+
+  - name: gen_source_retailmoneylocationvtb_product_id_guid
+    type: TEXT
+
+  - name: source_vtb_retailmoneyaccountref_id_id
+    type: TEXT
+
+  - name: source_vtb_retailmoneyaccountref_id_systemcode
+    type: TEXT
+
+  - name: source_vtb_retailmoneyaccountref_id_version
+    type: BIGINT
+
+  - name: source_vtb_retailmoneyaccountref_id_updatetime
+    type: TIMESTAMP
+
+  - name: source_vtb_retailmoneyaccountref_id_createtime
+    type: TIMESTAMP
+
+  - name: source_vtb_search_methodid_type_values
+    type: TEXT
+
+  - name: source_vtb_search_methodbankandaccount_account
+    type: TEXT
+
+  - name: source_vtb_search_methodbankandaccount_bankname
+    type: TEXT
+
+  - name: source_vtb_search_methodbankandaccount_bankbic
+    type: TEXT
+
+  - name: source_vtb_search_methodbankandaccount_type_values
+    type: TEXT
+
+  - name: source_vtb_search_methodphone_phone
+    type: TEXT
+
+  - name: source_vtb_search_methodphone_type_values
+    type: TEXT
+
+  - name: source_vtb_search_methodcard_card
+    type: TEXT
+
+  - name: source_vtb_search_methodcard_type_values
+    type: TEXT
+
+  - name: source_vtb_search_method_type_values
+    type: TEXT
+
+  - name: source_vtb_paymentsystem_values
+    type: TEXT
+
+  - name: source_fps_beneficiary
+    type: TEXT
+
+  - name: source_fps_beneficiarybank_fpsid
+    type: TEXT
+
+  - name: source_fps_beneficiarybank_bic
+    type: TEXT
+
+  - name: source_fps_beneficiaryaccount
+    type: TEXT
+
+  - name: source_fps_search_methodbankandaccount_account
+    type: TEXT
+
+  - name: source_fps_search_methodbankandaccount_bankname
+    type: TEXT
+
+  - name: source_fps_search_methodbankandaccount_bankbic
+    type: TEXT
+
+  - name: source_fps_search_methodbankandaccount_type_values
+    type: TEXT
+
+  - name: source_fps_search_methodphone_phone
+    type: TEXT
+
+  - name: source_fps_search_methodphone_type_values
+    type: TEXT
+
+  - name: source_fps_search_methodcard_card
+    type: TEXT
+
+  - name: source_fps_search_methodcard_type_values
+    type: TEXT
+
+  - name: source_fps_search_method_type_values
+    type: TEXT
+
+  - name: source_fps_paymentsystem_values
+    type: TEXT
+
+  - name: source_interbank_beneficiary
+    type: TEXT
+
+  - name: source_interbank_beneficiarybank_name
+    type: TEXT
+
+  - name: source_interbank_beneficiarybank_bic
+    type: TEXT
+
+  - name: source_interbank_beneficiaryaccount
+    type: TEXT
+
+  - name: source_interbank_paymentsystem_values
+    type: TEXT
+
+  - name: target_retailmoneytransfertarget_amount
+    type: BIGINT
+
+  - name: target_retailmoneytransfertarget_currency_code_rk
+    type: BIGINT
+    nullable: false
+
+  - name: target_retailmoneytransfertarget_currency_code
+    type: TEXT
+    nullable: false
+
+  - name: gen_target_retailmoneylocationvtb_product_id_guid
+    type: TEXT
+
+  - name: target_vtb_retailmoneyaccountref_id_id
+    type: TEXT
+
+  - name: target_vtb_retailmoneyaccountref_id_systemcode
+    type: TEXT
+
+  - name: target_vtb_retailmoneyaccountref_id_version
+    type: BIGINT
+
+  - name: target_vtb_retailmoneyaccountref_id_updatetime
+    type: TIMESTAMP
+
+  - name: target_vtb_retailmoneyaccountref_id_createtime
+    type: TIMESTAMP
+
+  - name: target_vtb_search_methodid_type_values
+    type: TEXT
+
+  - name: target_vtb_search_methodbankandaccount_account
+    type: TEXT
+
+  - name: target_vtb_search_methodbankandaccount_bankname
+    type: TEXT
+
+  - name: target_vtb_search_methodbankandaccount_bankbic
+    type: TEXT
+
+  - name: target_vtb_search_methodbankandaccount_type_values
+    type: TEXT
+
+  - name: target_vtb_search_methodphone_phone
+    type: TEXT
+
+  - name: target_vtb_search_methodphone_type_values
+    type: TEXT
+
+  - name: target_vtb_search_methodcard_card
+    type: TEXT
+
+  - name: target_vtb_search_methodcard_type_values
+    type: TEXT
+
+  - name: target_vtb_search_method_type_values
+    type: TEXT
+
+  - name: target_vtb_paymentsystem_values
+    type: TEXT
+
+  - name: target_fps_beneficiary
+    type: TEXT
+
+  - name: target_fps_beneficiarybank_fpsid
+    type: TEXT
+
+  - name: target_fps_beneficiarybank_bic
+    type: TEXT
+
+  - name: target_fps_beneficiaryaccount
+    type: TEXT
+
+  - name: target_fps_search_methodbankandaccount_account
+    type: TEXT
+
+  - name: target_fps_search_methodbankandaccount_bankname
+    type: TEXT
+
+  - name: target_fps_search_methodbankandaccount_bankbic
+    type: TEXT
+
+  - name: target_fps_search_methodbankandaccount_type_values
+    type: TEXT
+
+  - name: target_fps_search_methodphone_phone
+    type: TEXT
+
+  - name: target_fps_search_methodphone_type_values
+    type: TEXT
+
+  - name: target_fps_search_methodcard_card
+    type: TEXT
+
+  - name: target_fps_search_methodcard_type_values
+    type: TEXT
+
+  - name: target_fps_search_method_type_values
+    type: TEXT
+
+  - name: target_fps_paymentsystem_values
+    type: TEXT
+
+  - name: target_interbank_beneficiary
+    type: TEXT
+
+  - name: target_interbank_beneficiarybank_name
+    type: TEXT
+
+  - name: target_interbank_beneficiarybank_bic
+    type: TEXT
+
+  - name: target_interbank_beneficiaryaccount
+    type: TEXT
+
+  - name: target_interbank_paymentsystem_values
+    type: TEXT
+
+  - name: target_paymentsystem_values
+    type: TEXT
+
+  - name: target_retailmoneytransfertarget_message
+    type: TEXT
+
+  - name: valuedate
+    type: DATE
+
+  - name: executiondate
+    type: DATE
+
+  - name: gen_id_guid
+    type: TEXT
+
+  - name: payment_rk
+    type: BIGINT
+    nullable: false
+
+  - name: id_id
+    type: TEXT
+    nullable: false
+
+  - name: id_systemcode
+    type: TEXT
+
+  - name: id_version
+    type: BIGINT
+
+  - name: id_updatetime
+    type: TIMESTAMP
+
+  - name: id_createtime
+    type: TIMESTAMP
+
+hash_src_fields:
+ - retailmoneytransferorder_guid_dk
+ - type_retailmoneytransferstarteventtypevalues
+ - event_id_eventidentifier_id
+ - event_id_eventidentifier_eventtime
+ - event_id_eventidentifier_systemcode
+ - gen_customer_id_guid
+ - retailmoneycustomerref_id_id_rk
+ - retailmoneycustomerref_id_id
+ - retailmoneycustomerref_id_systemcode
+ - retailmoneycustomerref_id_version
+ - retailmoneycustomerref_id_updatetime
+ - retailmoneycustomerref_id_createtime
+ - gen_employee_id_guid
+ - retailmoneytransferemployeeref_id_id_rk
+ - retailmoneytransferemployeeref_id_id
+ - retailmoneytransferemployeeref_id_systemcode
+ - retailmoneytransferemployeeref_id_version
+ - retailmoneytransferemployeeref_id_updatetime
+ - retailmoneytransferemployeeref_id_createtime
+ - type_retailmoneytransferordertypevalues
+ - status_retailmoneytransferorderstatusvalues
+ - channel_retailmoneytransferchannelvalues
+ - promocode
+ - fxrate_rate
+ - fxrate_currencyfrom_currencycode
+ - fxrate_currencyto_currencycode
+ - direction_retailmoneytransferorderdirectionvalues
+ - source_retailmoneytransfersource_amount
+ - source_retailmoneytransfersource_currency_code_rk
+ - source_retailmoneytransfersource_currency_code
+ - gen_source_retailmoneylocationvtb_product_id_guid
+ - source_vtb_retailmoneyaccountref_id_id
+ - source_vtb_retailmoneyaccountref_id_systemcode
+ - source_vtb_retailmoneyaccountref_id_version
+ - source_vtb_retailmoneyaccountref_id_updatetime
+ - source_vtb_retailmoneyaccountref_id_createtime
+ - source_vtb_search_methodid_type_values
+ - source_vtb_search_methodbankandaccount_account
+ - source_vtb_search_methodbankandaccount_bankname
+ - source_vtb_search_methodbankandaccount_bankbic
+ - source_vtb_search_methodbankandaccount_type_values
+ - source_vtb_search_methodphone_phone
+ - source_vtb_search_methodphone_type_values
+ - source_vtb_search_methodcard_card
+ - source_vtb_search_methodcard_type_values
+ - source_vtb_search_method_type_values
+ - source_vtb_paymentsystem_values
+ - source_fps_beneficiary
+ - source_fps_beneficiarybank_fpsid
+ - source_fps_beneficiarybank_bic
+ - source_fps_beneficiaryaccount
+ - source_fps_search_methodbankandaccount_account
+ - source_fps_search_methodbankandaccount_bankname
+ - source_fps_search_methodbankandaccount_bankbic
+ - source_fps_search_methodbankandaccount_type_values
+ - source_fps_search_methodphone_phone
+ - source_fps_search_methodphone_type_values
+ - source_fps_search_methodcard_card
+ - source_fps_search_methodcard_type_values
+ - source_fps_search_method_type_values
+ - source_fps_paymentsystem_values
+ - source_interbank_beneficiary
+ - source_interbank_beneficiarybank_name
+ - source_interbank_beneficiarybank_bic
+ - source_interbank_beneficiaryaccount
+ - source_interbank_paymentsystem_values
+ - target_retailmoneytransfertarget_amount
+ - target_retailmoneytransfertarget_currency_code_rk
+ - target_retailmoneytransfertarget_currency_code
+ - gen_target_retailmoneylocationvtb_product_id_guid
+ - target_vtb_retailmoneyaccountref_id_id
+ - target_vtb_retailmoneyaccountref_id_systemcode
+ - target_vtb_retailmoneyaccountref_id_version
+ - target_vtb_retailmoneyaccountref_id_updatetime
+ - target_vtb_retailmoneyaccountref_id_createtime
+ - target_vtb_search_methodid_type_values
+ - target_vtb_search_methodbankandaccount_account
+ - target_vtb_search_methodbankandaccount_bankname
+ - target_vtb_search_methodbankandaccount_bankbic
+ - target_vtb_search_methodbankandaccount_type_values
+ - target_vtb_search_methodphone_phone
+ - target_vtb_search_methodphone_type_values
+ - target_vtb_search_methodcard_card
+ - target_vtb_search_methodcard_type_values
+ - target_vtb_search_method_type_values
+ - target_vtb_paymentsystem_values
+ - target_fps_beneficiary
+ - target_fps_beneficiarybank_fpsid
+ - target_fps_beneficiarybank_bic
+ - target_fps_beneficiaryaccount
+ - target_fps_search_methodbankandaccount_account
+ - target_fps_search_methodbankandaccount_bankname
+ - target_fps_search_methodbankandaccount_bankbic
+ - target_fps_search_methodbankandaccount_type_values
+ - target_fps_search_methodphone_phone
+ - target_fps_search_methodphone_type_values
+ - target_fps_search_methodcard_card
+ - target_fps_search_methodcard_type_values
+ - target_fps_search_method_type_values
+ - target_fps_paymentsystem_values
+ - target_interbank_beneficiary
+ - target_interbank_beneficiarybank_name
+ - target_interbank_beneficiarybank_bic
+ - target_interbank_beneficiaryaccount
+ - target_interbank_paymentsystem_values
+ - target_paymentsystem_values
+ - target_retailmoneytransfertarget_message
+ - valuedate date
+ - executiondate date
+ - gen_id_guid
+ - payment_rk
+ - id_id
+ - id_systemcode
+ - id_version
+ - id_updatetime
+ - id_createtime
+multi_fields:
+  - name: effective_date
+    field_data_quality_checks: []
+
+ref_fields: []
+
+hub_fields:
+  - name: client_rk
+    hub_table: hub_client
+    hub_schema: rdv
+    is_bk: true

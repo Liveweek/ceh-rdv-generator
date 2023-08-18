@@ -1,0 +1,16 @@
+{
+    "resource_desc": "Таблица rdv.{{ ctx.name }}",
+    "tags": [
+        "zi21",
+        "{{ ctx.src_cd }}"
+    ],
+    "features": {},
+    "datasets": [
+        {
+            "name": "{{ ctx.name }}",
+            "schema_name": "rdv"
+        }
+    ],
+    "resource_cd": "ceh.rdv.{{ ctx.name }}",
+    "is_readonly": true
+}

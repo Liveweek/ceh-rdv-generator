@@ -1,0 +1,19 @@
+schema_version: '1.1'
+type: DB_TABLE
+name: {{ ctx.name }}
+data_source_type: GENERIC
+source_system: {{ ctx.src_cd }}
+data_capture_mode: {{ ctx.data_capture_mode }}
+
+columns:
+#  - name: party_ref
+#    type: TEXT
+{%- for field in ctx.field_ctx_list %}
+  - name: {{ field.name.lower() }}
+{%- if field.datatype.upper() in ['STRING', 'VARCHAR'] %}
+    type: TEXT
+{%- else %}
+    type: {{ field.datatype.upper() }}
+{%- endif %}
+
+{%- endfor %}
