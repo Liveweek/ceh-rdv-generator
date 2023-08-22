@@ -5,6 +5,7 @@ from pathlib import Path
 
 from core.mapping import MappingMeta, MartMapping
 from core.exporters import MartPackExporter
+from map_gen import mapping_generator
 from ui import MainWindow
 
 
@@ -40,29 +41,10 @@ if __name__ == "__main__":
         win.mainloop()
         
     else:
-        file_path = args.path
-          
-        # TODO : Заменить этот код на вызов функции mapping_generator 
-          
-        with open(file_path, 'rb') as f:
-            mapping_meta = MappingMeta(f.read())
-            map_objects = mapping_meta.get_tgt_tables_list()
-
-            for obj_num, map_obj in enumerate(map_objects):
-                mapping = mapping_meta.get_mapping_by_table(map_obj)
-                mm = MartMapping(
-                    mart_name=map_obj,
-                    mart_mapping=mapping,
-                    src_cd=mapping_meta.src_cd,
-                    data_capture_mode=args.load,
-                    source_system=args.sys
-                )
-                
-                mp_exporter = MartPackExporter(
-                    exp_obj=mm,
-                    path=str(Path(__file__).parent) + "\\{src_cd}\\wf_{obj_num}\\".format(
-                        src_cd=args.src_cd,
-                        obj_num=obj_num+1
-                    ), 
-                    env=env)
-                mp_exporter.load()
+        mapping_generator(
+            file_path=args.path,
+            src_cd=args.src_cd,
+            load_mode=args.load,
+            sys=args.sys,
+            env=env
+        )
