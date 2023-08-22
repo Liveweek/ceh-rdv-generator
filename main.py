@@ -1,10 +1,7 @@
 import argparse
 from jinja2 import Environment, FileSystemLoader
-from pathlib import Path
 
 
-from core.mapping import MappingMeta, MartMapping
-from core.exporters import MartPackExporter
 from map_gen import mapping_generator
 from ui import MainWindow
 
