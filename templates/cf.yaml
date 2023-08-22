@@ -1,12 +1,10 @@
 schema_version: 2.0
 metadata:
-  author: pokonakov (70171591)
+  author: {{ author }}
   version: "1.0"
   description: Управляющий поток
   tags:
     - "cf"
-    - "boop"
-    - "BOOP"
     - "rdv"
     - "src: {{ ctx.source_system }}"
     - "tgt: rdv"
@@ -27,7 +25,7 @@ flows:
     description: Управляющий поток {{ wf_file  }}
     builder: ceh_core_idl.app.builders.simple_flow_builder
     tasks:
-      - id: run_{{ wf_file  }}
+      - id: run_{{ wf_file }}
         builder: ceh_core_idl.app.builders.include_flow_builder
         properties:
     {% if ctx.data_capture_mode == 'increment' %}

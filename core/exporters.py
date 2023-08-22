@@ -83,10 +83,11 @@ class TargetObjectExporter:
             
     
 class MappingObjectExporter:
-    map_ctx: MappingContext
-    env:     Environment
-    wf_file: str
-    cf_file: str
+    map_ctx:     MappingContext
+    env:         Environment
+    wf_file:     str
+    cf_file:     str
+    author_name: str
 
     template_wf_name: str = 'wf.yaml' #Название шаблона WF
     template_cf_name: str = 'cf.yaml' #Название шаблона CF
@@ -113,7 +114,8 @@ class MappingObjectExporter:
         return template.render(
             ctx=self.map_ctx,
             wf_file=self.wf_file,
-            cf_file=self.cf_file
+            cf_file=self.cf_file,
+            author=self.author_name
         )
     
     
