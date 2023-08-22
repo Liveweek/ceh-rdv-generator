@@ -26,6 +26,11 @@ parser.add_argument(
     help="Режим загрузки"
 )
 parser.add_argument("--sys", default="DAPP")
+parser.add_argument(
+    "--author",
+    help="Название автора потоков"
+)
+
 
 
 
