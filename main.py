@@ -26,7 +26,10 @@ parser.add_argument(
     help="Режим загрузки"
 )
 parser.add_argument("--sys", default="DAPP")
-
+parser.add_argument(
+    "--author",
+    help="Название автора потоков"
+)
 
 
 if __name__ == "__main__":
@@ -43,5 +46,6 @@ if __name__ == "__main__":
             src_cd=args.src_cd,
             load_mode=args.load,
             sys=args.sys,
-            env=env
+            env=env,
+            author=args.author
         )

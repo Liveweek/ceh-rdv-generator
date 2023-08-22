@@ -83,19 +83,21 @@ class TargetObjectExporter:
             
     
 class MappingObjectExporter:
-    map_ctx: MappingContext
-    env:     Environment
-    wf_file: str
-    cf_file: str
+    map_ctx:     MappingContext
+    env:         Environment
+    wf_file:     str
+    cf_file:     str
+    author_name: str
 
     template_wf_name: str = 'wf.yaml' #Название шаблона WF
     template_cf_name: str = 'cf.yaml' #Название шаблона CF
     template_py_name: str = 'wf.py'   #Название PY файла рабочего потока
     
     
-    def __init__(self, env, ctx):
+    def __init__(self, env, ctx, author):
         self.env = env
         self.map_ctx = ctx
+        self.author_name = author
         self.wf_file = f"wf_{self.map_ctx.src_cd}_{self.map_ctx.source_system.lower()}_rdv_{self.map_ctx.tgt_name[5:]}".lower()
         self.cf_file = f"cf_{self.map_ctx.src_cd}_{self.map_ctx.source_system.lower()}_rdv_{self.map_ctx.tgt_name[5:]}".lower()
     
@@ -113,7 +115,8 @@ class MappingObjectExporter:
         return template.render(
             ctx=self.map_ctx,
             wf_file=self.wf_file,
-            cf_file=self.cf_file
+            cf_file=self.cf_file,
+            author=self.author_name
         )
     
     
@@ -149,13 +152,13 @@ class MartPackExporter:
     _tgt_exporter:     TargetObjectExporter
     _mapping_exporter: MappingObjectExporter
     
-    def __init__(self, exp_obj, path, env):
+    def __init__(self, exp_obj, path, env, author):
         self.exp_obj = exp_obj
         self.path = path
         
         self._src_exporter = SourceObjectExporter(env, self.exp_obj.src_ctx)
         self._tgt_exporter = TargetObjectExporter(env, self.exp_obj.tgt_ctx)
-        self._mapping_exporter = MappingObjectExporter(env, self.exp_obj.mapping_ctx)
+        self._mapping_exporter = MappingObjectExporter(env, self.exp_obj.mapping_ctx, author)
         
         
     def load(self):

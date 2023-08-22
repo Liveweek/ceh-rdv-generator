@@ -12,5 +12,5 @@
         }
     ],
     "resource_cd": "ceh.rdv.{{ ctx.name }}",
-    "is_readonly": true
+    "is_readonly": false
 }
