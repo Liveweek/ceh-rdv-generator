@@ -65,22 +65,22 @@ class MainWindow(tk.Tk):
         
         
     def _export_mapping(self):
-        if all(
-          self.file_path.get(),
-          self.src_cd.get(),
-          self.sys.get(),
-          self.load_mode.get() 
+        if not all(
+            self.file_path.get(),
+            self.src_cd.get(),
+            self.sys.get(),
+            self.load_mode.get(),
         ):
-            try:
-                mapping_generator(
-                    file_path=self.file_path.get(),
-                    src_cd=self.src_cd.get(),
-                    sys=self.sys.get(),
-                    load_mode=self.load_mode.get(),
-                    env=self.env
-                )
-                showinfo("Успешно", "Файлы для маппинга сгенерированы успешно!")
-            except exp.IncorrectMappingReadException:
-                showerror("ОШИБКА", "Ошибка чтения маппинга. Проверьте, соответствует ли он необходимому для генерации формату")
-        else:
             raise exp.IncorrectSetupException
+        
+        try:
+            mapping_generator(
+                file_path=self.file_path.get(),
+                src_cd=self.src_cd.get(),
+                sys=self.sys.get(),
+                load_mode=self.load_mode.get(),
+                env=self.env
+            )
+            showinfo("Успешно", "Файлы для маппинга сгенерированы успешно!")
+        except exp.IncorrectMappingReadException:
+            showerror("ОШИБКА", "Ошибка чтения маппинга. Проверьте, соответствует ли он необходимому для генерации формату")
