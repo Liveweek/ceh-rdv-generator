@@ -16,6 +16,7 @@ class MainWindow(tk.Tk):
         self.file_path = tk.StringVar()
         self.sys = tk.StringVar(value="DAPP")
         self.load_mode = tk.StringVar(value="snapshot")
+        self.author = tk.StringVar(value="pokonakov (VTB70171591)")
         
         self.env = env
         
@@ -52,6 +53,11 @@ class MainWindow(tk.Tk):
         load_mode_name = ttk.Combobox(textvariable=self.load_mode, values=['snapshot', 'increment'])
         load_mode_name.pack(fill=tk.X, padx=25)
         
+        label_author = ttk.Label(text="Введите автора потока", font=("Arial", 10))
+        label_author.pack(pady=15)
+        author_entry = ttk.Entry(textvariable=self.author, font=("Arial", 10))
+        author_entry.pack(fill=tk.X, padx=25)
+        
         start_export_button = tk.Button(
             text="ЭКСПОРТИРОВАТЬ",
             command=self._export_mapping,
@@ -65,11 +71,12 @@ class MainWindow(tk.Tk):
         
         
     def _export_mapping(self):
-        if not all(
+        if not all((
             self.file_path.get(),
             self.src_cd.get(),
             self.sys.get(),
             self.load_mode.get(),
+            self.author.get(),)
         ):
             raise exp.IncorrectSetupException
         
@@ -79,7 +86,8 @@ class MainWindow(tk.Tk):
                 src_cd=self.src_cd.get(),
                 sys=self.sys.get(),
                 load_mode=self.load_mode.get(),
-                env=self.env
+                env=self.env, 
+                author=self.author.get()
             )
             showinfo("Успешно", "Файлы для маппинга сгенерированы успешно!")
         except exp.IncorrectMappingReadException:

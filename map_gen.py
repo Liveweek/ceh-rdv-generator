@@ -10,7 +10,8 @@ def mapping_generator(
         src_cd: str,
         load_mode: str,
         sys: str,
-        env: Environment
+        env: Environment,
+        author: str = "pkonakov (VTB70171591)"
     ) -> None:
     """Функция генератора маппинга, вызывает функционал по генерации
        файлов
@@ -21,6 +22,7 @@ def mapping_generator(
         load_mode (str): Режим загрузки (increment, snapshot)
         sys (str): Система источника данных для загрузки
         env (Environment): Окружение шаблонов jinja2
+        author (str): Наименование автора потоков для заполнения в шаблоне
     """
     
     with open(file_path, 'rb') as f:
@@ -43,5 +45,6 @@ def mapping_generator(
                     src_cd=src_cd,
                     obj_num=obj_num+1
                 ), 
-                env=env)
+                env=env,
+                author=author)
             mp_exporter.load()

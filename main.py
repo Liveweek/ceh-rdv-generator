@@ -32,8 +32,6 @@ parser.add_argument(
 )
 
 
-
-
 if __name__ == "__main__":
     args = parser.parse_args()
     env = Environment(loader=FileSystemLoader('templates'))
@@ -48,5 +46,6 @@ if __name__ == "__main__":
             src_cd=args.src_cd,
             load_mode=args.load,
             sys=args.sys,
-            env=env
+            env=env,
+            author=args.author
         )
