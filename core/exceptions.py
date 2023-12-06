@@ -1,8 +1,9 @@
-class IncorrectMappingReadException(Exception):
-    def __str__(self):
-        return 'Некорректно сформирован excel-файл маппинга'
-    
-    
-class IncorrectSetupException(Exception):
-    def __str__(self):
-        return 'Заполните все файлы программы для генерации маппинга'
+class IncorrectMappingException(Exception):
+    message: str = ''
+
+    def __init__(self, message="Ошибка формирования файлов описания потока"):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self) -> str:
+        return self.message

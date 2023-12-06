@@ -4,20 +4,17 @@ metadata:
   version: "1.0"
   description: Управляющий поток
   tags:
-    - "cf"
-    - "rdv"
-    - "src: {{ ctx.source_system }}"
-    - "tgt: rdv"
-    - "team: zi21"
-    - "{{ ctx.algo }}"
+    {%- for tag in tags %}
+    - {{tag}}
+    {%- endfor %}
 
   group: general_leader
   imports:
-  {% if ctx.data_capture_mode == 'increment' %}
+  {%- if ctx.data_capture_mode == 'increment' %}
     - rdv_cf_uni_template.cf_uni_template
-  {% else %}
+  {%- else %}
     - rdv_cf_snapshot_template.cf_snapshot 
-  {% endif %}
+  {%- endif %}
   main_flows:
     - {{ cf_file }}
 flows:
@@ -30,20 +27,14 @@ flows:
         properties:
     {% if ctx.data_capture_mode == 'increment' %}
           ref: cf_uni_template
+    {% else %}
+          ref: cf_snapshot
+    {% endif %}
           properties:
+            mode: ANY
             work_flow_id: {{ wf_file  }}
-            wf_metric: wf_dataset_max_date_to
-            cf_metric: dataset_max_date_to
             actual_dttm_prefix: {{ ctx.src_cd.lower() }}
             algos_map:
               {{ ctx.algo }}: 
-                - uni: {{ ctx.source_system }}.{{ ctx.src_schema }}.{{ ctx.src_name }}
+                - uni: {{ uni_ctx.resource_cd }}
                   ceh: ceh.rdv.{{ ctx.tgt_name }}
-    {% else %}
-          ref: cf_snapshot
-          properties:
-            work_flow_id: {{ wf_file }}
-            algos_map:
-              {{ ctx.algo }}:
-                - {{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}
-    {% endif %}

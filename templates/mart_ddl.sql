@@ -1,15 +1,14 @@
--- {{ ctx.name }} definition
-
--- Drop table
-
---DROP TABLE {{ ctx.name }} CASCADE;
-
-CREATE TABLE rdv.{{ ctx.name }} (
+CREATE TABLE {{ ctx.schema }}.{{ ctx.name }} (
 {%- for field in ctx.field_ctx_list %}
-{{ field.name.lower() }} {{  field.datatype.lower() }} 
- {%- if not field.is_nullable -%} 
+{%- if field.name.lower() == 'hash_diff' %}
+  hash_diff char(32) not null
+{%- else %}
+  {{ field.name.lower() }} {{  field.datatype.lower() }} 
+  {%- if not field.is_nullable -%} 
 {{ ' not null' }} 
-{%-  endif -%},
+  {%- endif -%}
+{%- endif -%}
+{%- if not loop.last -%},{% endif -%}
 {%- endfor %}
 )
 WITH (
@@ -18,9 +17,11 @@ WITH (
  compresstype=zstd,
  compresslevel=1
 )
-DISTRIBUTED BY (<<change_me>>);
+DISTRIBUTED BY ({{ ctx.distributed_by }});
 
---grant all on {{ ctx.name }} to dev_zi21_services;
---grant all on {{ ctx.name }} to dev_zi21_etl;
-
---select * from {{ ctx.name }};
+-- Комментарии к полям таблицы
+{%- for field in ctx.field_ctx_list %}
+{%- if  field.comment|length %}
+COMMENT ON COLUMN {{ ctx.schema }}.{{ ctx.name }}.{{ field.name.lower() }} IS '{{ field.comment }}';
+{%- endif -%}
+{%- endfor %}

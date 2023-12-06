@@ -1,15 +1,13 @@
+{# Необходимо прописать (в кавычках) название поля в источнике по которому осуществляется фильтрация данных по дате #}
+{%- set ns = namespace(processed_dt='hdp_processed_dttm') -%}
 name: {{ wf_file }}
 type: WORK_FLOW
 schema_version: '1.13'
 version: 1
 tags:
-  - 'wf'
-  - 'wf2rdv'
-  - 'zi21'
-  - 'team: zi21'
-  - 'src: {{ ctx.source_system }}'
-  - 'tgt: rdv'
-  - '{{ctx.algo}}'
+    {%- for tag in tags %}
+  - {{tag}}
+    {%- endfor %}
 
 orientation: TB
 
@@ -31,26 +29,20 @@ targets:
     schema: rdv
     table: {{ctx.tgt_name}}
 
-  {% for hub in ctx.hub_pool %}
-  - short_name: {{ hub }}
-    schema: rdv
-    table: {{ hub }}
-    resource_cd: ceh.rdv.{{ hub }}
+  {% for hub in ctx.hub_ctx_list %}
+  - short_name: {{ hub.hub_short_name }}
+    schema: {{ hub.hub_schema }}
+    table: {{ hub.hub_name_only }}
+    resource_cd: ceh.{{ hub.hub_name }}
   {% endfor %}
-
 
 {%+ if ctx.data_capture_mode == 'increment' %}
 local_metrics:
-  wf_dataset_max_dttm_to:
+  wf_dataset_max_date_to:
     target: stage_T_input
-{%+ if ctx.source_system == "DAPP" %}
-    query: max(hdp_processed_dttm)
-{% elif ctx.source_system == "DRP" %}
-    query: max(hdp_processed_dttm)::timestamp(0)
-{% endif%}
-    on_null: .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".wf_dataset_max_date_to
+    query: max(date_trunc('second', {{ ns.processed_dt }}))
+    on_null: .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".dataset_max_date_to
 {% endif %}
-
 
 mappings:
   marts:
@@ -59,67 +51,39 @@ mappings:
       algorithm_uid_2: {{ ctx.algo_sub }}
       target: tgt
       source: src_tb 
-      delta_mode: {{ 'append' if ctx.data_capture_mode == 'increment' else 'new' }}
+      delta_mode: {{ ctx.delta_mode }}
 
       {%+ if ctx.data_capture_mode == "increment"%}
       where_clause:
         engine: jq
-        {%+ if ctx.source_system == "DAPP" %}
         template: |
-          hdp_processed_dttm >= '{from}' 
+          {{ ns.processed_dt }} >= '{from}' 
           and 
-          hdp_processed_dttm < '{to}'
+          {{ ns.processed_dt }} < '{to}'
         vars:
           from: |
             .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".wf_dataset_max_date_to
           to:   |
-            .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".dataset_max_date_to | strptime("%Y-%m-%dT%H:%M:%S") | mktime + 1 | strftime("%Y-%m-%dT%H:%M:%S")
-        {% elif ctx.source_system == "DRP" %}
-        template: |  
-          processed_dt >= '{from}'::timestamp(0) and processed_dt < '{to}'::timestamp(0)
-          and
-          dte >= '{from_dte}' and dte <= '{to_dte}'
-        vars:
-          from: |
-            .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".wf_dataset_max_date_to | strptime("%Y-%m-%dT%H:%M:%S") | strftime("%Y-%m-%d %H:%M:%S")
-          to:   |
-            .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".dataset_max_date_to
-          from_dte: |
-            .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".wf_dataset_max_date_to | strptime("%Y-%m-%dT%H:%M:%S") | strftime("%Y%m%d")  #20230116  
-          to_dte:  |
-            .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".dataset_max_date_to | strptime("%Y-%m-%dT%H:%M:%S") | strftime("%Y%m%d")
-        {% endif %}
+            .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".{{uni_ctx.actual_dttm_name}} | strptime("%Y-%m-%dT%H:%M:%S") | mktime + 1 | strftime("%Y-%m-%dT%H:%M:%S")
 
-        metrics:
-          by_src:
-            - save_as: wf_dataset_max_date_to
-              metric:  wf_dataset_max_dttm_to
+      metrics:
+        by_src:
+          - save_as: wf_dataset_max_date_to
+            metric:  wf_dataset_max_date_to
       {% endif %}
       field_map:
       {% for field in ctx.field_map_ctx_list %}
         {{ field.tgt_field }}:
-        {%- if field.sql_expression != '~' %}
-          type: sql_expression
-          value: {{ field.sql_expression }}
-          field_type: {{ field.tgt_datatype.upper() }}
-        {%- elif field.tgt_datatype.upper() == 'DATE' %}
-          type: sql_expression
-          value: etl.try_cast2dt(p_text:={{ field.src_field.lower() }}, p_mask:='YYYY-MM-DD')
-          field_type: DATE
-        {%- elif field.tgt_datatype.upper() == 'TIMESTAMP' %}
-          type: sql_expression
-          value: etl.try_cast2ts(p_text:={{ field.src_field.lower() }}, p_mask:='YYYY-MM-DD HH24:MI:SS')
-          field_type: TIMESTAMP
-        {%- else %}
-          type: column
-          value: {{ field.src_field.lower() }}
-        {%- endif %}
+          type: {{field.type}}
+          value: {{ field.value }}
+          field_type: {{ field.field_type }}
       {% endfor %}
       ref_map: []
 
+{%- if ctx.hub_ctx_list|length > 0 %}
       hub_map:
         {% for hub_field in ctx.hub_ctx_list %}
-        - target: {{ hub_field.hub_name }}
+        - target: {{ hub_field.hub_short_name }}
           rk_field: {{ hub_field.name }}
           business_key_schema: {{ hub_field.bk_schema_name }}
           on_full_null: {{ hub_field.on_full_null }}
@@ -128,8 +92,11 @@ mappings:
               type: sql_expression
               value: | 
                 case 
-                  when <insert me> = '' then null
-                  else <insert me>
+                  when {{ hub_field.src_attr }} = '' then null
+                  else {{ hub_field.src_attr }}
                 end
               field_type: TEXT
         {% endfor %}
+{%- else %}
+      hub_map: []
+{%- endif %}

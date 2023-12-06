@@ -1,0 +1,43 @@
+schema_version: '1.2'
+name: {{ ctx.hub_name_only }}
+schema: {{ ctx.hub_schema }}
+columns:
+  - name: {{ ctx.name }}
+    type: BIGINT
+    nullable: false
+  - name: {{ ctx.hub_field }}
+    type: VARCHAR
+    nullable: false
+  - name: src_cd
+    type: VARCHAR
+    nullable: false
+  - name: bk_type
+    type: VARCHAR
+    nullable: false
+  - name: invalid_id
+    type: BIGINT
+    nullable: false
+  - name: version_id
+    type: BIGINT
+    nullable: false
+type: HUB
+rk_field: employee_rk
+bk_fields:
+  - name: employee_id
+resource_cd: ceh.rdv.hub_employee
+business_key_schemas:
+  - name: BK_employee_KIH_seq
+    src_cd: KIH
+    bk_type: seq_num_id
+    fields:
+      - name: employee_id
+        field_data_quality_checks:
+          - name: IsEmpty
+        field_transform_chains:
+          - name: Cast
+            params:
+              to_type: VARCHAR
+          - name: Coalesce
+            params:
+              value: ~null~
+    split_resource: true

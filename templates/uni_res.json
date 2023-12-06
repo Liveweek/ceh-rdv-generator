@@ -1,0 +1,33 @@
+{
+    "resource_cd": "{{ ctx.source }}.{{ ctx.schema }}.{{ ctx.table_name }}",
+    "resource_desc": "Таблица {{ ctx.schema }}.{{ ctx.table_name }}",
+    "tags": [],
+    "features": {},
+    "status": {
+        "is_readonly": false,
+        "is_maintenance": false,
+        "is_deleted": false
+    },
+    "connections": "{{ '{{' }} hive_dapp_conn | for_instance('{{ ctx.instance }}') {{ '}}' }}",
+    "datasets": [
+        {
+            "name": "{{ ctx.table_name }}",
+            "schema_name": "{{ '{{' }} {{ ctx.instance }}.schema {{ '}}' }}",
+            "filter": "",
+            "physical_options": {}
+        }
+    ],
+    "metrics": {
+        "is_locked": "{{ '{{' }} metrics.is_locked | for_instance('{{ ctx.instance }}', resource_cd='{{ ctx.source }}.{{ ctx.schema }}.{{ ctx.table_name }}') {{ '}}' }}",
+        "locked_by": "{{ '{{' }} metrics.locked_by | for_instance('{{ ctx.instance }}', resource_cd='{{ ctx.source }}.{{ ctx.schema }}.{{ ctx.table_name }}') {{ '}}' }}",
+        "dataset_max_date_to": "{{ '{{' }} metrics.dapp_rp_dataset_max_date_to | for_instance('{{ ctx.instance }}', database={{ ctx.instance }}.schema, table='{{ ctx.table_name }}') {{ '}}' }}",
+        "{{ ctx.actual_dttm_name }}": {
+            "id": "{{ ctx.source }}.{{ ctx.schema }}.{{ ctx.table_name }}.{{ ctx.actual_dttm_name }}",
+            "connection": "arena_conn",
+            "query": "SELECT date_trunc('second', now())",
+            "query_parameters": null,
+            "default": "1900-01-01T00:00:00",
+            "refresh": "PDT00H01M"
+        }
+    }
+}

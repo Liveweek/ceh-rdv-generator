@@ -1,183 +1,268 @@
 import os
-from dataclasses import dataclass
-from jinja2 import Environment
-
+import shutil
+from jinja2 import Environment, Template
 
 from .mapping import MartMapping
-from .context import SourceContext, TargetContext, MappingContext
+from .context import SourceContext, TargetContext, MappingContext, UniContext
+
+import yaml
+import config as conf
+
+
+def _get_tags_list(tags_tmpl, tags_val) -> list:
+    """
+    Args:
+        tags_tmpl: Шаблон для формирования результата
+        tags_val: Данные для формирования результата
+
+    Returns: Список строк для вставки в секцию tags
+    """
+
+    ret_tags: list
+
+    # Делаем шаблон из секции tags
+    tags_tmpl = Template(str(tags_tmpl))
+    # Формируем исходные данные
+    tag_list = yaml.safe_load(tags_tmpl.render(tags=tags_val))
+    # Формируем список строк
+    ret_tags = list()
+    for tag in tag_list:
+        if type(tag) is str:
+            # print(f"'{tag}'")
+            ret_tags.append(f"'{tag}'")
+        elif type(tag) is dict:
+            key = list(tag.keys())[0]
+            val = list(tag.values())[0]
+            # print(f"'{key}:{val}'")
+            ret_tags.append(f"'{key}:{val}'")
+
+    return ret_tags
 
 
 class SourceObjectExporter:
     src_ctx: SourceContext
-    env:     Environment
-    
-    template_name: str = 'db_table.yaml' #Название шаблона
-    
-    
-    def __init__(self, env, ctx):
+    uni_ctx: UniContext
+    env: Environment
+
+    # Название шаблона
+    template_name: str = 'db_table.yaml'        # Описание таблицы-источника
+    template_uni_json: str = 'uni_res.json'     # Название шаблона ресурса UNI
+
+    def __init__(self, env, ctx, uni_ctx):
         self.env = env
         self.src_ctx = ctx
-        
-        
-    def _get_filled_src(self):
-        template = self.env.get_template(self.template_name)
-        return template.render(ctx=self.src_ctx)
-    
-    
+        self.uni_ctx = uni_ctx
+
     def export(self, path):
         os.makedirs(path, exist_ok=True)
-        output = self._get_filled_src()
-        with open(f"{path}{self.src_ctx.name}.yaml", "w", encoding="utf-8") as f:
+        template = self.env.get_template(self.template_name)
+        output = template.render(ctx=self.src_ctx)
+        file_name: str = os.path.join(path, self.src_ctx.name + '.yaml')
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
-        
-    
-    
+
+    def export_uni_resource(self, path):
+        """
+        Функция формирования файла с описанием uni-ресурса
+        Args:
+            path: Каталог для формирования файла
+
+        Returns: None
+        """
+        file_path = os.path.join(path, self.uni_ctx.source, self.uni_ctx.schema)
+        os.makedirs(file_path, exist_ok=True)
+
+        template = self.env.get_template(self.template_uni_json)
+        output = template.render(ctx=self.uni_ctx)
+
+        file_name = '.'.join([self.uni_ctx.source, self.uni_ctx.schema, self.uni_ctx.table_name, "json"])
+        file_name = os.path.join(file_path, file_name)
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write(output)
+
+
 class TargetObjectExporter:
     tgt_ctx: TargetContext
-    env:     Environment
+    uni_ctx: UniContext
+    env: Environment
 
-    template_name_yaml: str = 'mart.yaml'    #Название шаблона yaml
-    template_name_sql:  str = 'mart_ddl.sql' #Название шаблона DDL sql 
-    template_name_json: str = 'ceh_res.json' #Название шаблона ресурса CEH
-    
+    template_name_yaml: str = 'mart.yaml'       # Название шаблона yaml
+    template_name_sql: str = 'mart_ddl.sql'     # Название шаблона DDL sql
+    template_name_json: str = 'ceh_res.json'    # Название шаблона ресурса CEH
 
-    def __init__(self, env, ctx):
+    def __init__(self, env, ctx, uni_ctx):
         self.env = env
         self.tgt_ctx = ctx
-        
-    
-    def _get_filled_tgt(self):
-        template = self.env.get_template(self.template_name_yaml)
-        return template.render(ctx=self.tgt_ctx)
-    
-    
-    def _get_filled_tgt_sql(self):
-        template = self.env.get_template(self.template_name_sql)
-        return template.render(ctx=self.tgt_ctx)
-    
-    
-    def _get_filled_tgt_ceh_res(self):
-        template = self.env.get_template(self.template_name_json)
-        return template.render(ctx=self.tgt_ctx)
-    
-    
+        self.uni_ctx = uni_ctx
+
     def export_yaml(self, path):
         os.makedirs(path, exist_ok=True)
-        output = self._get_filled_tgt()
-        with open(f"{path}{self.tgt_ctx.name}.yaml", "w", encoding="utf-8") as f:
+
+        template = self.env.get_template(self.template_name_yaml)
+        output = template.render(ctx=self.tgt_ctx)
+
+        file_name: str = os.path.join(path, self.tgt_ctx.name + '.yaml')
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
-            
 
     def export_sql(self, path):
         os.makedirs(path, exist_ok=True)
-        output = self._get_filled_tgt_sql()
-        with open(f"{path}{self.tgt_ctx.name}.sql", "w", encoding="utf-8") as f:
+
+        template = self.env.get_template(self.template_name_sql)
+        output = template.render(ctx=self.tgt_ctx)
+
+        file_name: str = os.path.join(path, self.tgt_ctx.name + '.sql')
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
-            
-            
+
+    def export_sql_view(self, path):
+        """
+        Формирует скрипт, для создания views на целевую таблицу (акцессоров)
+        Args:
+            path: Каталог, в котором будет сформирован файл
+
+        Returns: None
+        """
+        os.makedirs(path, exist_ok=True)
+        template = self.env.get_template('f_gen_access_view.sql')
+        output = template.render(ctx=self.tgt_ctx)
+        file_name: str = os.path.join(path, 'f_gen_access_view.sql')
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write(output)
+
     def export_ceh_resource(self, path):
         os.makedirs(path, exist_ok=True)
-        output = self._get_filled_tgt_ceh_res()
-        with open(f"{path}\\ceh.rdv.{self.tgt_ctx.name}.json", "w", encoding="utf-8") as f:
+
+        template = self.env.get_template(self.template_name_json)
+        output = template.render(ctx=self.tgt_ctx, uni_ctx=self.uni_ctx)
+
+        file_name: str = os.path.join(path, self.tgt_ctx.name + '.json')
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
-            
-    
+
+
 class MappingObjectExporter:
-    map_ctx:     MappingContext
-    env:         Environment
-    wf_file:     str
-    cf_file:     str
+    map_ctx: MappingContext
+    uni_ctx: UniContext
+    env: Environment
+    wf_file: str
+    cf_file: str
     author_name: str
 
-    template_wf_name: str = 'wf.yaml' #Название шаблона WF
-    template_cf_name: str = 'cf.yaml' #Название шаблона CF
-    template_py_name: str = 'wf.py'   #Название PY файла рабочего потока
-    
-    
-    def __init__(self, env, ctx, author):
+    template_wf_name: str = 'wf.yaml'  # Название шаблона WF
+    template_cf_name: str = 'cf.yaml'  # Название шаблона CF
+    template_py_name: str = 'wf.py'    # Название PY файла рабочего потока
+
+    def __init__(self, env, ctx, author, uni_ctx, tags):
         self.env = env
         self.map_ctx = ctx
         self.author_name = author
-        self.wf_file = f"wf_{self.map_ctx.src_cd}_{self.map_ctx.source_system.lower()}_rdv_{self.map_ctx.tgt_name[5:]}".lower()
-        self.cf_file = f"cf_{self.map_ctx.src_cd}_{self.map_ctx.source_system.lower()}_rdv_{self.map_ctx.tgt_name[5:]}".lower()
-    
+        self.wf_file = f"wf_{self.map_ctx.work_flow_name}"
+        self.cf_file = f"cf_{self.map_ctx.work_flow_name}"
+        self.uni_ctx = uni_ctx
+        self.tags = tags
 
-    def _get_filled_wf_mapping(self):
-        template = self.env.get_template(self.template_wf_name)
-        return template.render(
-            ctx=self.map_ctx,
-            wf_file=self.wf_file
-        )
-    
-    
     def _get_filled_cf_mapping(self):
         template = self.env.get_template(self.template_cf_name)
         return template.render(
             ctx=self.map_ctx,
             wf_file=self.wf_file,
             cf_file=self.cf_file,
-            author=self.author_name
+            author=self.author_name,
+            uni_ctx=self.uni_ctx,
+            tags=self.tags
         )
-    
-    
+
     def export_wf(self, path):
         os.makedirs(path, exist_ok=True)
-        output = self._get_filled_wf_mapping()
-        with open(f"{path}{self.wf_file}.yaml".lower(), "w", encoding="utf-8") as f:
+
+        template = self.env.get_template(self.template_wf_name)
+        output = template.render(ctx=self.map_ctx, wf_file=self.wf_file, uni_ctx=self.uni_ctx, tags=self.tags)
+
+        file_name: str = os.path.join(path, self.wf_file + '.yaml')
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
-            
-    
+
     def export_cf(self, path):
         os.makedirs(path, exist_ok=True)
+
         output = self._get_filled_cf_mapping()
-        with open(f"{path}{self.cf_file}.yaml".lower(), "w", encoding="utf-8") as f:
+
+        file_name: str = os.path.join(path, self.cf_file + '.yaml')
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
-            
-    
+
     def export_py(self, path):
         os.makedirs(path, exist_ok=True)
-        output = ''
-        with open('./templates/wf.py', "r", encoding="utf-8") as f:
-            output = f.read()
-        with open(f"{path}{self.wf_file}.py", "w", encoding="utf-8") as f:
-            f.write(output)    
-        
+
+        file_name: str = os.path.join(path, self.wf_file + '.py')
+        shutil.copy('./templates/wf.py', file_name)
 
 
 class MartPackExporter:
     exp_obj: MartMapping
-    path:    str
+    path: str
 
-    _src_exporter:     SourceObjectExporter
-    _tgt_exporter:     TargetObjectExporter
+    _src_exporter: SourceObjectExporter
+    _tgt_exporter: TargetObjectExporter
     _mapping_exporter: MappingObjectExporter
-    
+
     def __init__(self, exp_obj, path, env, author):
         self.exp_obj = exp_obj
         self.path = path
-        
-        self._src_exporter = SourceObjectExporter(env, self.exp_obj.src_ctx)
-        self._tgt_exporter = TargetObjectExporter(env, self.exp_obj.tgt_ctx)
-        self._mapping_exporter = MappingObjectExporter(env, self.exp_obj.mapping_ctx, author)
-        
-        
-    def load(self):
-        self._src_export()
-        self._tgt_export()
-        self._mapping_export()
-        
-        
-    def _src_export(self):
-        self._src_exporter.export("{path}\\src_rdv\\schema\\db_tables\\".format(path=self.path))
-        
-        
-    def _tgt_export(self):
-        self._tgt_exporter.export_yaml("{path}\\src_rdv\\schema\\ceh\\rdv\\".format(path=self.path))
-        self._tgt_exporter.export_sql("{path}\\ddl_sql\\".format(path=self.path))
-        self._tgt_exporter.export_ceh_resource("{path}\\_resources\\ceh\\rdv\\".format(path=self.path))
 
-        
-    def _mapping_export(self):
-        self._mapping_exporter.export_wf("{path}\\src_rdv\\schema\\work_flows\\".format(path=self.path))
-        self._mapping_exporter.export_cf("{path}\\src_rdv\\flow_dumps\\".format(path=self.path))
-        self._mapping_exporter.export_py("{path}\\src_rdv\\dags\\".format(path=self.path))
+        # Данные для формирования секции "tags""
+        tags_val = {'src_cd': self.exp_obj.mapping_ctx.src_cd, 'src_tbl': self.exp_obj.src_ctx.name,
+                    'prv': self.exp_obj.mapping_ctx.source_system,
+                    'tgt': self.exp_obj.tgt_ctx.schema, 'tgt_tbl': self.exp_obj.tgt_ctx.name,
+                    'cf_flow': 'cf_' + self.exp_obj.mapping_ctx.work_flow_name,
+                    'wf_flow': 'wf_' + self.exp_obj.mapping_ctx.work_flow_name, 'alg': self.exp_obj.mapping_ctx.algo}
+
+        self.tags: list = _get_tags_list(tags_tmpl=conf.tags, tags_val=tags_val)
+
+        self._src_exporter = SourceObjectExporter(env, self.exp_obj.src_ctx, self.exp_obj.uni_ctx)
+        self._tgt_exporter = TargetObjectExporter(env=env, ctx=self.exp_obj.tgt_ctx, uni_ctx=self.exp_obj.uni_ctx)
+        self._mapping_exporter = MappingObjectExporter(env=env, ctx=self.exp_obj.mapping_ctx, author=author,
+                                                       uni_ctx=self.exp_obj.uni_ctx, tags=self.tags)
+
+    def load(self):
+        """
+        Формирование целевых файлов
+        Returns: None
+
+        """
+        # Описание таблицы - источника
+        exp_path = os.path.join(self.path, r"etl-scale\general_ledger\src_rdv\schema\db_tables")
+        self._src_exporter.export(exp_path)
+
+        # Описание uni - ресурса таблицы источника
+        exp_path = os.path.join(self.path, r"etl-scale\_resources\uni")
+        self._src_exporter.export_uni_resource(exp_path)
+
+        # Описание целевой таблицы (mart)
+        exp_path = os.path.join(self.path, r"etl-scale\general_ledger\src_rdv\schema\ceh\rdv")
+        self._tgt_exporter.export_yaml(exp_path)
+
+        # Скрипт создания целевой таблицы (mart)
+        exp_path = os.path.join(self.path, r"adgp\extensions\ripper\.data")
+        self._tgt_exporter.export_sql(exp_path)
+
+        # Скрипт для формирования view на целевую таблицу
+        exp_path = os.path.join(self.path, r"src")
+        self._tgt_exporter.export_sql_view(exp_path)
+
+        # Описание ресурса целевой таблицы (mart)
+        exp_path = os.path.join(self.path, r"etl-scale\_resources\ceh\rdv")
+        self._tgt_exporter.export_ceh_resource(exp_path)
+
+        # Рабочий поток (wf_*.yaml)
+        exp_path = os.path.join(self.path, r"etl-scale\general_ledger\src_rdv\schema\work_flows")
+        self._mapping_exporter.export_wf(exp_path)
+
+        # py - файл потока управления (cf_*.py)
+        exp_path = os.path.join(self.path, r"etl-scale\general_ledger\src_rdv\flow_dumps")
+        self._mapping_exporter.export_cf(exp_path)
+
+        # py - файл рабочего потока (wf_*.py)
+        exp_path = os.path.join(self.path, r"etl-scale\general_ledger\src_rdv\dags")
+        self._mapping_exporter.export_py(exp_path)

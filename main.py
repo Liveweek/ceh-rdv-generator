@@ -1,51 +1,51 @@
-import argparse
+import os
+import yaml
 from jinja2 import Environment, FileSystemLoader
-
-
-from map_gen import mapping_generator
+import logging
+from pathlib import Path
+import config as conf
 from ui import MainWindow
 
 
-parser = argparse.ArgumentParser(prog="Конвертер маппинга")
+def main() -> int:
+    # "Загрузка" файлов-шаблонов из каталога templates
+    env = Environment(loader=FileSystemLoader('templates'))
 
-parser.add_argument(
-    "--ui", 
-    action='store_true',
-    help="Вызов графического интерфейса маппинга"
-)
-parser.add_argument(
-    "--src_cd", 
-    help="Код источника маппинга, используется для создания папки с соответствующим наименованием"
-)
-parser.add_argument(
-    "--path",
-    help="Полный путь к файлу маппинга"
-)
-parser.add_argument(
-    "--load",
-    help="Режим загрузки"
-)
-parser.add_argument("--sys", default="DAPP")
-parser.add_argument(
-    "--author",
-    help="Название автора потоков"
-)
+    # Файл настройки программы.
+    config_name: str = 'generator.yaml'
+    if not os.path.exists(config_name):
+        print('Не найден файл конфигурации программы "{config_name}" в каталоге основного модуля')
+        return 1
+
+    with open(config_name, 'r', encoding='utf-8') as f:
+        conf.config = yaml.safe_load(f)
+
+    conf.tags = conf.config.get('tags', dict())
+    conf.setting_up_field_lists = conf.config.get('setting_up_field_lists', dict())
+    conf.field_type_list = conf.config.get('field_type_list', dict())
+    conf.excel_data_definition = conf.config.get('excel_data_definition', dict())
+
+    # Файл журнала
+    log_file = os.path.join(Path(__file__).parent, 'generator.log')
+    if os.path.exists(log_file):
+        os.remove(log_file)
+
+    logging.basicConfig(level=logging.INFO, filename=log_file, filemode="w",
+                        format="%(asctime)s %(levelname)s %(message)s")
+
+    # Сохраняем "для потомков"
+    conf.log_file = log_file
+
+    print(f"log_file={log_file}")
+    logging.info('START')
+
+    win = MainWindow(env=env)
+    win.mainloop()
+
+    logging.info('STOP')
+    return 0
 
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    env = Environment(loader=FileSystemLoader('templates'))
-    
-    if args.ui:
-        win = MainWindow(env=env)
-        win.mainloop()
-        
-    else:
-        mapping_generator(
-            file_path=args.path,
-            src_cd=args.src_cd,
-            load_mode=args.load,
-            sys=args.sys,
-            env=env,
-            author=args.author
-        )
+    exit_code = main()
+    exit(exit_code)
