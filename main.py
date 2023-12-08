@@ -8,8 +8,6 @@ from ui import MainWindow
 
 
 def main() -> int:
-    # "Загрузка" файлов-шаблонов из каталога templates
-    env = Environment(loader=FileSystemLoader('templates'))
 
     # Файл настройки программы.
     config_name: str = 'generator.yaml'
@@ -25,6 +23,14 @@ def main() -> int:
     conf.field_type_list = conf.config.get('field_type_list', dict())
     conf.excel_data_definition = conf.config.get('excel_data_definition', dict())
 
+    # "Загрузка" файлов-шаблонов
+    templates_path: str = os.path.abspath(conf.config.get('templates', 'templates'))
+    if not os.path.exists(templates_path):
+        print(f'Не найден каталог с шаблонами "{templates_path}"')
+        return 1
+
+    env = Environment(loader=FileSystemLoader(templates_path))
+
     # Файл журнала
     log_file = os.path.join(Path(__file__).parent, 'generator.log')
     if os.path.exists(log_file):
@@ -38,6 +44,7 @@ def main() -> int:
 
     print(f"log_file={log_file}")
     logging.info('START')
+    logging.info(f'templates_path="{templates_path}"')
 
     win = MainWindow(env=env)
     win.mainloop()

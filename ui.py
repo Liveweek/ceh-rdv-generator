@@ -4,6 +4,9 @@ from tkinter import ttk, SOLID, LEFT
 from tkinter.messagebox import showinfo, showerror
 from tkinter import filedialog
 import logging
+
+from jinja2 import TemplateNotFound
+
 from map_gen import mapping_generator
 import core.exceptions as exp
 import config as conf
@@ -29,8 +32,8 @@ class MainWindow(tk.Tk):
 
         frame = tk.Frame(
             self,       # Обязательный параметр, который указывает окно для размещения Frame.
-            padx=5,    # Задаём отступ по горизонтали.
-            pady=5,    # Задаём отступ по вертикали.
+            padx=5,     # Задаём отступ по горизонтали.
+            pady=5,     # Задаём отступ по вертикали.
             borderwidth=1,
             relief=SOLID
         )
@@ -114,6 +117,7 @@ class MainWindow(tk.Tk):
         os.system(log_cmd)
 
     def _export_mapping(self):
+        msg: str
         if not all((
                 self.file_path.get(),
                 self.out_path.get(),
@@ -144,9 +148,15 @@ class MainWindow(tk.Tk):
 
             except (exp.IncorrectMappingException, ValueError) as err:
                 logging.error(err)
-                msg = f"Ошибка: {err}. Проверьте журнал работы программы."
-                showerror("Ошибка", msg)
+                msg = f"Ошибка: {err}.\nПроверьте журнал работы программы."
+                showerror(title="Ошибка", message=msg)
 
-            # except Exception as e:
-            #     logging.error(str(e))
-            #     showerror("Ошибка", str(e))
+            except TemplateNotFound:
+                msg = "Ошибка чтения шаблона.\nПроверьте журнал работы программы."
+                logging.exception("Ошибка чтения шаблона")
+                showerror(title="Ошибка", message=msg)
+
+            except Exception:
+                msg = "Неизвестная ошибка.\nПроверьте журнал работы программы."
+                logging.exception("Неизвестная ошибка")
+                showerror(title="Ошибка", message=msg)

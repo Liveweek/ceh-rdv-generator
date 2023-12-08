@@ -27,6 +27,10 @@ anchor_area: &area
 <<: *team
 ###
 
+# Ссылка на каталог с шаблонами
+# По умолчанию шаблоны берутся из каталога templates, который находится "рядом" с main.py
+templates: templates
+
 # Программа для отображения log-файла. Если строка содержит пробелы, то заключить в двойные кавычки
 # Пример '"имя программы"'
 log_viewer: '"C:\Program Files\Notepad++\notepad++.exe"'
@@ -94,17 +98,21 @@ setting_up_field_lists:
     - deleted_flg
     - valid_flg
 
-  # Список дополнительных полей с описанием, которые БУДУТ добавлены в секцию field_map шаблона wf.yaml
-  # Добавление идет после исключения
+  # Список полей с описанием, которые БУДУТ добавлены в секцию field_map шаблона wf.yaml
+  # Добавление идет после исключения (список ignore_field_map_ctx_list)
+  # Если поле уже присутствует в списке полей, то будет инициирована ошибка
   add_field_map_ctx_list:
+
     deleted_flg:
       type: sql_expression
       value: decode(upper(changetype), 'DELETE', true, false)
       field_type: BOOLEAN
 
+
 field_type_list:
 
-  # Список предопределенных "связок" поле - тип поля для целевой таблицы. Обязательно в виде словаря
+  # Список предопределенных "связок" поле - тип поля для целевой таблицы.
+  # Если поле присутствует, то его тип должен соответствовать типу заданному списке
   tgt_attr_predefined_datatype: {
     effective_dttm: [ "timestamp", "not null" ],
     hash_diff: [ "char(32)", "not null" ],
@@ -118,6 +126,8 @@ field_type_list:
   # Список возможных значений колонки "Tgt_attr_datatype"
   tgt_attr_datatype: ['text', 'timestamp', 'char(32)', 'bigint', 'boolean', 'integer', 'decimal']
 
+# Список имен колонок на листах файла EXCEL, которые должны присутствовать
+# Регистр букв важен!
 excel_data_definition:
   columns: {
     'Детали загрузок Src-RDV': [

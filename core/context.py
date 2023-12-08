@@ -1,7 +1,8 @@
 import logging
 from dataclasses import dataclass, KW_ONLY, field
-import numpy
+
 import pandas
+
 import config as conf
 from core.exceptions import IncorrectMappingException
 
@@ -44,10 +45,6 @@ class HubFieldContext:
 
 @dataclass
 class FieldMapContext:
-    # src_field: str
-    # tgt_field: str
-    # tgt_datatype: str
-    # sql_expression: str = "~"
     # Имя поля в целевой таблице
     tgt_field: str
     # Тип значения column/sql_expression
@@ -87,24 +84,6 @@ class TableContext:
                                      pk='' if len(row) < 4 else row[3],
                                      comment='' if len(row) < 5 else row[4])
 
-            # match row:
-            #     case [name, datatype]:
-            #         field_ctx = FieldContext(name=name, datatype=datatype)
-            #         self.field_ctx_list.append(field_ctx)
-            #     case [name, datatype, nullable]:
-            #         field_ctx = FieldContext(
-            #             name=name,
-            #             datatype=datatype,
-            #             is_nullable=nullable.lower() != 'not null',
-            #         )
-            #     case [name, datatype, nullable, pk]:
-            #         field_ctx = FieldContext(
-            #             name=name,
-            #             datatype=datatype,
-            #             is_nullable=nullable.lower() != 'not null',
-            #             pk=pk
-            #         )
-
             self.field_ctx_list.append(field_ctx)
 
 
@@ -119,26 +98,12 @@ class DAPPSourceContext(SourceContext):
     def __post_init__(self):
         super().__post_init__()
 
-        # exists: bool = False
-        # for ff in self.field_ctx_list:
-        #     if ff.name == 'hdp_processed_dttm':
-        #         exists = True
-        #         break
-        # if not exists:
-        #     self.field_ctx_list.append(FieldContext('hdp_processed_dttm', 'timestamp'))
-        #
 
 @dataclass
 class DRPSourceContext(SourceContext):
 
     def __post_init__(self):
         super().__post_init__()
-
-        # self.field_ctx_list.append(FieldContext('processed_dt', 'timestamp'))
-        # self.field_ctx_list.append(FieldContext('dte', 'text'))
-        #
-        # if self.data_capture_mode == 'increment':
-        #     self.field_ctx_list.append(FieldContext('op_type', 'text'))
 
 
 @dataclass
@@ -271,7 +236,6 @@ class MappingContext:
 
             else:
                 msg = f'Неверное описание поля: {row[0]}-{row[1]}-{row[2]}-{row[3]}-{row[4]}'
-                logging.error(msg)
                 raise IncorrectMappingException(msg)
 
             # Добавляем только те поля целевой таблицы, которые не входят в список исключений
@@ -279,9 +243,17 @@ class MappingContext:
                 self.field_map_ctx_list.append(field_map)
 
         # Добавляем поля
-        for key in add_field_map_ctx_lis.keys():
-            fld = add_field_map_ctx_lis[key]
-            deleted_flg_map = FieldMapContext(tgt_field=key,
+        for tgt_field in add_field_map_ctx_lis.keys():
+            # Описание поля
+            fld = add_field_map_ctx_lis[tgt_field]
+
+            # Проверяем, если поле уже присутствует, то выдается ошибка
+            if [ctx.tgt_field for ctx in self.field_map_ctx_list if ctx.tgt_field == tgt_field]:
+                msg = (f'Поле {tgt_field}, определенное в конфигурационном файле, '
+                       f'нельзя добавить в список полей, т.к. оно уже присутствует в списке')
+                raise IncorrectMappingException(msg)
+
+            deleted_flg_map = FieldMapContext(tgt_field=tgt_field,
                                               type=fld['type'],
                                               value=fld['value'],
                                               field_type=fld['field_type']
