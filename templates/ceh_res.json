@@ -2,8 +2,11 @@
     "resource_cd": "ceh.{{ ctx.schema }}.{{ ctx.name }}",
     "resource_desc": "Таблица {{ ctx.schema }}.{{ ctx.name }}",
     "tags": [
-        "zi21",
-        "{{ ctx.src_cd }}"
+{%- if tags|length > 0 %}
+{%- for tag in tags %}
+        {{tag}}{%- if not loop.last -%},{% endif -%}
+{%- endfor %}
+{%- endif %}
     ],
     "features": {},
     "datasets": [

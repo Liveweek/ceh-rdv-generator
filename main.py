@@ -19,6 +19,8 @@ def main() -> int:
         conf.config = yaml.safe_load(f)
 
     conf.tags = conf.config.get('tags', dict())
+    conf.resource_tags = conf.config.get('resource_tags', dict())
+
     conf.setting_up_field_lists = conf.config.get('setting_up_field_lists', dict())
     conf.field_type_list = conf.config.get('field_type_list', dict())
     conf.excel_data_definition = conf.config.get('excel_data_definition', dict())

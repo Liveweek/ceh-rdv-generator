@@ -64,6 +64,11 @@ tags:
   - *subo
   - "{{ tags.alg }}"
 
+resource_tags:
+  - *author
+  - *team
+  - *subo
+  - *area
 
 # Настройка списков полей
 # Раздел должен присутствовать!!!

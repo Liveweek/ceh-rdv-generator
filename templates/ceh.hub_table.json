@@ -1,7 +1,13 @@
 {
     "resource_cd": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}",
     "resource_desc": "Хаб {{hub.hub_schema}}.{{hub.hub_name_only}}",
-    "tags": [],
+    "tags": [
+{%- if tags|length > 0 %}
+{%- for tag in tags %}
+        {{tag}}{%- if not loop.last -%},{% endif -%}
+{%- endfor %}
+{%- endif %}
+    ],
     "features": {
         "domain": "{{hub.hub_schema}}"
     },

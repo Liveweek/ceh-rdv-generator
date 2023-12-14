@@ -22,20 +22,18 @@ def _get_tags_list(tags_tmpl, tags_val) -> list:
     ret_tags: list
 
     # Делаем шаблон из секции tags
-    tags_tmpl = Template(str(tags_tmpl))
+    tags_template = Template(str(tags_tmpl))
     # Формируем исходные данные
-    tag_list = yaml.safe_load(tags_tmpl.render(tags=tags_val))
+    tag_list = yaml.safe_load(tags_template.render(tags=tags_val))
     # Формируем список строк
     ret_tags = list()
     for tag in tag_list:
         if type(tag) is str:
-            # print(f"'{tag}'")
-            ret_tags.append(f"'{tag}'")
+            ret_tags.append(f"\"{tag}\"")
         elif type(tag) is dict:
             key = list(tag.keys())[0]
             val = list(tag.values())[0]
-            # print(f"'{key}:{val}'")
-            ret_tags.append(f"'{key}:{val}'")
+            ret_tags.append(f"\"{key}:{val}\"")
 
     return ret_tags
 
@@ -153,13 +151,17 @@ class TargetObjectExporter:
     def export_ceh_resource(self, path):
         os.makedirs(path, exist_ok=True)
 
+        # Данные для формирования секции "tags""
+        tags_val = {}
+        tags: list = _get_tags_list(tags_tmpl=conf.resource_tags, tags_val=tags_val)
+
         actual_dttm: str = f"{self.tgt_ctx.src_cd}_actual_dttm".lower()
         # Словарь с доп. параметрами для шаблона
         values: dict = {"actual_dttm_name": actual_dttm}
 
         # Ресурс целевой таблицы
         template = self.env.get_template(self.template_name_json)
-        output = template.render(ctx=self.tgt_ctx, uni_ctx=self.uni_ctx)
+        output = template.render(ctx=self.tgt_ctx, uni_ctx=self.uni_ctx, tags=tags)
         file_name: str = os.path.join(path, self.tgt_ctx.name + '.json')
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
@@ -167,14 +169,14 @@ class TargetObjectExporter:
         for hub in self.tgt_ctx.hub_ctx_list:
             # Ресурс хаб-таблицы
             template = self.env.get_template(self.template_hub_json)
-            output = template.render(hub=hub, values=values)
+            output = template.render(hub=hub, values=values, tags=tags)
             file_name: str = os.path.join(path, f'ceh.{hub.hub_name}.json')
             with open(file_name, "w", encoding="utf-8") as f:
                 f.write(output)
 
             # Ресурс БК-схемы
             template = self.env.get_template(self.template_bk_json)
-            output = template.render(hub=hub)
+            output = template.render(hub=hub, tags=tags)
             file_name: str = os.path.join(path, f'ceh.{hub.hub_name}.{hub.bk_schema_name}.json')
             with open(file_name, "w", encoding="utf-8") as f:
                 f.write(output)
