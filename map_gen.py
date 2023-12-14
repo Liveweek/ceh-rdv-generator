@@ -93,7 +93,8 @@ def mapping_generator(
         )
 
         # Каталог для файлов
-        out_path_tbl = os.path.join(Path(__file__).parent, out_path, tbl_name)
+        # out_path_tbl = os.path.join(Path(__file__).parent, out_path, tbl_name)
+        out_path_tbl = os.path.join(out_path, tbl_name)
         logging.info(f'Каталог потока {work_flow_name}: {out_path_tbl}')
 
         # Объект для формирования данных для вывода в файлы

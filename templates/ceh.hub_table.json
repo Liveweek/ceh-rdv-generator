@@ -1,0 +1,63 @@
+{
+    "resource_cd": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}",
+    "resource_desc": "Хаб {{hub.hub_schema}}.{{hub.hub_name_only}}",
+    "tags": [],
+    "features": {
+        "domain": "{{hub.hub_schema}}"
+    },
+    "is_readonly": false,
+    "datasets": [
+        {
+            "name": "{{hub.hub_name_only}}",
+            "schema_name": "{{hub.hub_schema}}",
+            "filter": "",
+            "columns": [
+                {
+                    "name": "version_id",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "invalid_id",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "bk_type",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "src_cd",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "{{hub.hub_field}}",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "{{hub.name}}",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                }
+            ],
+            "physical_options": ""
+        }
+    ],
+    "metrics": {
+        "rdv_actual_dttm": {
+            "id": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}:{{hub.actual_dttm_name}}",
+            "query": "[.version.operations[].source.conf.by_src[].{{values.actual_dttm_name}} | values] | min",
+            "default": "default_value"
+        }
+    },
+    "is_deleted": false
+}

@@ -252,8 +252,18 @@ class MartMapping:
         is_error: bool = False
 
         tgt = self.mart_mapping[['Tgt_attribute', 'Tgt_attr_datatype', 'Tgt_attr_mandatory', 'Tgt_PK', 'Comment']]
+        src = self.mart_mapping[['Src_attr', 'Src_attr_datatype']].dropna(how='all')
 
-        # Проверяем типы данных. Читаем данный из настроек программы
+        # Проверяем типы данных, заданные для источника. Читаем данные из настроек программы
+        src_attr_datatype: dict = config.field_type_list.get('src_attr_datatype', dict())
+        err_rows = src[~src['Src_attr_datatype'].isin(src_attr_datatype)]
+        if len(err_rows) > 0:
+            logging.error(f"Неверно указаны типы данных источника для '{self.mart_name}':")
+            for line in str(err_rows).splitlines():
+                logging.error(line)
+            is_error = True
+
+        # Проверяем типы данных для целевой таблицы. Читаем данные из настроек программы
         tgt_attr_datatype: dict = config.field_type_list.get('tgt_attr_datatype', dict())
         err_rows = tgt[~tgt['Tgt_attr_datatype'].isin(tgt_attr_datatype)]
         if len(err_rows) > 0:

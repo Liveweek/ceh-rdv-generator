@@ -17,7 +17,7 @@ class MainWindow(tk.Tk):
         super().__init__()
 
         author: str = conf.config.get('author', 'Unknown Author')
-        out_path: str = conf.config.get('out_path', '???')
+        out_path: str = os.path.abspath(conf.config.get('out_path', '999'))
 
         self.out_path = tk.StringVar(value=out_path)
         self.file_path = tk.StringVar()
@@ -118,6 +118,7 @@ class MainWindow(tk.Tk):
 
     def _export_mapping(self):
         msg: str
+
         if not all((
                 self.file_path.get(),
                 self.out_path.get(),
@@ -135,7 +136,7 @@ class MainWindow(tk.Tk):
 
                 mapping_generator(
                     file_path=self.file_path.get(),
-                    out_path=self.out_path.get(),
+                    out_path=os.path.abspath(self.out_path.get()),
                     source_system=self.source_system.get(),
                     load_mode=self.load_mode.get(),
                     env=self.env,

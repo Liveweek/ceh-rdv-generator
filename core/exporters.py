@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from jinja2 import Environment, Template
@@ -86,9 +87,12 @@ class TargetObjectExporter:
     uni_ctx: UniContext
     env: Environment
 
-    template_name_yaml: str = 'mart.yaml'       # Название шаблона yaml
-    template_name_sql: str = 'mart_ddl.sql'     # Название шаблона DDL sql
-    template_name_json: str = 'ceh_res.json'    # Название шаблона ресурса CEH
+    template_name_yaml: str = 'mart.yaml'               # Название шаблона описания март-таблицы
+    template_hub_yaml: str = 'hub.yaml'                 # Название шаблона описания хаб-таблицы
+    template_name_sql: str = 'mart_ddl.sql'             # Название шаблона скрипта создания март-таблицы
+    template_name_json: str = 'ceh_res.json'            # Название шаблона ресурса CEH
+    template_hub_json: str = 'ceh.hub_table.json '      # Название шаблона ресурса хаб-таблицы
+    template_bk_json: str = 'ceh_bk_schema.json'        # Название шаблона ресурса БК-схемы хаб-таблицы
 
     def __init__(self, env, ctx, uni_ctx):
         self.env = env
@@ -96,21 +100,37 @@ class TargetObjectExporter:
         self.uni_ctx = uni_ctx
 
     def export_yaml(self, path):
+        """
+        Создание файлов описания март и хеш таблиц
+        Args:
+            path: Каталог, в котором будут создаваться файлы
+
+        Returns: None
+        """
+        values: dict = {'src_cd': self.tgt_ctx.src_cd}
+
         os.makedirs(path, exist_ok=True)
 
+        # Файл описания март-таблицы
         template = self.env.get_template(self.template_name_yaml)
         output = template.render(ctx=self.tgt_ctx)
-
         file_name: str = os.path.join(path, self.tgt_ctx.name + '.yaml')
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
+
+        # Файлы описания хеш-таблиц
+        for hub in self.tgt_ctx.hub_ctx_list:
+            template = self.env.get_template(self.template_hub_yaml)
+            output = template.render(hub=hub, values=values)
+            file_name: str = os.path.join(path, f'ceh.{hub.hub_name}.yaml')
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(output)
 
     def export_sql(self, path):
         os.makedirs(path, exist_ok=True)
 
         template = self.env.get_template(self.template_name_sql)
         output = template.render(ctx=self.tgt_ctx)
-
         file_name: str = os.path.join(path, self.tgt_ctx.name + '.sql')
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
@@ -133,12 +153,31 @@ class TargetObjectExporter:
     def export_ceh_resource(self, path):
         os.makedirs(path, exist_ok=True)
 
+        actual_dttm: str = f"{self.tgt_ctx.src_cd}_actual_dttm".lower()
+        # Словарь с доп. параметрами для шаблона
+        values: dict = {"actual_dttm_name": actual_dttm}
+
+        # Ресурс целевой таблицы
         template = self.env.get_template(self.template_name_json)
         output = template.render(ctx=self.tgt_ctx, uni_ctx=self.uni_ctx)
-
         file_name: str = os.path.join(path, self.tgt_ctx.name + '.json')
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
+
+        for hub in self.tgt_ctx.hub_ctx_list:
+            # Ресурс хаб-таблицы
+            template = self.env.get_template(self.template_hub_json)
+            output = template.render(hub=hub, values=values)
+            file_name: str = os.path.join(path, f'ceh.{hub.hub_name}.json')
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(output)
+
+            # Ресурс БК-схемы
+            template = self.env.get_template(self.template_bk_json)
+            output = template.render(hub=hub)
+            file_name: str = os.path.join(path, f'ceh.{hub.hub_name}.{hub.bk_schema_name}.json')
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(output)
 
 
 class MappingObjectExporter:
