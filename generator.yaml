@@ -7,31 +7,29 @@ encoding: 'utf-8'
 
 # Ссылки/Якоря #########################################################################################################
 
-# Автор проекта - редактировать здесь
+# Автор проекта - редактировать здесь. Отступ обязателен
 anchor_author: &author
-  author: "Alexey Blagov (vtb70206470)"
+  "Автор Проекта"
 
 # Команда проекта - редактировать здесь
 anchor_team: &team
-  team: "zi21"
+  "Имя Команды"
 
 # СУБО - Слой устойчивых бизнес операций - редактировать здесь
 anchor_subo: &subo
-  subo: "subo1364"
+  "subo1364"
 
 # Предметная область (https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=647395081)
 # редактировать здесь
 anchor_area: &area
-  area: "client_service"
+  "client_service"
 
 ########################################################################################################################
 
-### Обращение conf.config["author"] -> 'Alexey Blagov (vtb70206470)'
-<<: *author
-<<: *team
-<<: *subo
-<<: *area
-###
+author: *author
+team: *team
+subo: *subo
+area: *area
 
 # Ссылка на каталог с шаблонами
 # По умолчанию шаблоны берутся из каталога templates, который находится "рядом" с main.py
@@ -41,7 +39,7 @@ templates: templates
 # Пример '"имя программы"'
 log_viewer: '"C:\Program Files\Notepad++\notepad++.exe"'
 # Командная строка для запуска log_viewer. Можно использовать псевдо-переменную {log_file}
-# Имя файла необходимо заключить в двойные кавычки
+# Имя файла необходимо заключить в двойные кавычки (возможны отличии в разных OS)
 log_file_cmd: '-ro "{log_file}"'
 
 # Каталог, в котором будут создаваться подкаталоги потоков
@@ -52,8 +50,8 @@ out_path: "123"
 # Можно изменить порядок строк, добавить свою строку без переменных
 # Для добавления строки с переменными - добавить пару имя:значение в словарь MartPackExporter.tags_val
 tags:
-  - <<: *team
-  - <<: *area
+  - team: *team
+  - area: *area
   - "src:{{ tags.src_cd }}"
   - "src-tbl:{{ tags.src_tbl }}"
   - "prv:{{ tags.prv }}"
@@ -62,16 +60,16 @@ tags:
   - "rls:текущий"
   - "cf:{{ tags.cf_flow }}"
   - "wf:{{ tags.wf_flow }}"
-  - <<: *subo
+  - subo: *subo
   - "{{ tags.alg }}"
 
 # Набор строк для секции tags в файлах описания ресурсов *.json
 # Можно изменить порядок строк, добавить свою строку без переменных
 resource_tags:
-  - *author
-  - *team
-  - *subo
-  - *area
+  - author: *author
+  - team: *team
+  - subo: *subo
+  - area: *area
 
 # Настройка списков полей
 # Раздел должен присутствовать!!!
@@ -146,7 +144,7 @@ field_type_list:
     hdp_processed_dttm: [ "string"],
   }
 
-  # Список возможных значений колонки "Tgt_attr_datatype"
+  # Список возможных значений колонки "Src_attr_datatype"
   src_attr_datatype: ['string', 'timestamp', 'bigint']
 
 # Список имен колонок на листах файла EXCEL, которые должны присутствовать
