@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pandas import DataFrame
 import logging
 
-import config
+from config import Config
 from .context import SourceContext, TargetContext, MappingContext, DAPPSourceContext, DRPSourceContext, UniContext
 from .exceptions import IncorrectMappingException
 
@@ -39,7 +39,7 @@ def _generate_mapping_df(file_data: bytes, sheet_name: str):
         Объект с типом DataFrame.
     """
 
-    columns = config.excel_data_definition.get('columns', dict())
+    columns = Config.excel_data_definition.get('columns', dict())
     columns_list: list[str] = columns[sheet_name]
 
     # Преобразование данных в DataFrame
@@ -255,7 +255,7 @@ class MartMapping:
         src = self.mart_mapping[['Src_attr', 'Src_attr_datatype']].dropna(how='all')
 
         # Проверяем типы данных, заданные для источника. Читаем данные из настроек программы
-        src_attr_datatype: dict = config.field_type_list.get('src_attr_datatype', dict())
+        src_attr_datatype: dict = Config.field_type_list.get('src_attr_datatype', dict())
         err_rows = src[~src['Src_attr_datatype'].isin(src_attr_datatype)]
         if len(err_rows) > 0:
             logging.error(f"Неверно указаны типы данных источника для '{self.mart_name}':")
@@ -264,7 +264,7 @@ class MartMapping:
             is_error = True
 
         # Проверяем типы данных для целевой таблицы. Читаем данные из настроек программы
-        tgt_attr_datatype: dict = config.field_type_list.get('tgt_attr_datatype', dict())
+        tgt_attr_datatype: dict = Config.field_type_list.get('tgt_attr_datatype', dict())
         err_rows = tgt[~tgt['Tgt_attr_datatype'].isin(tgt_attr_datatype)]
         if len(err_rows) > 0:
             logging.error(f"Неверно указаны типы данных в строках для целевой таблицы '{self.mart_name}':")
@@ -299,7 +299,7 @@ class MartMapping:
             is_error = True
 
         # Проверка полей, тип которых фиксирован
-        tgt_attr_predefined_datatype: dict = config.field_type_list.get('tgt_attr_predefined_datatype', dict())
+        tgt_attr_predefined_datatype: dict = Config.field_type_list.get('tgt_attr_predefined_datatype', dict())
         for fld_name in tgt_attr_predefined_datatype.keys():
             err_rows = tgt.query(f"Tgt_attribute == '{fld_name}'")
             if len(err_rows) == 0:

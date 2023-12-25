@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from jinja2 import Environment, Template
@@ -7,7 +6,7 @@ from .mapping import MartMapping
 from .context import SourceContext, TargetContext, MappingContext, UniContext
 
 import yaml
-import config as conf
+from config import Config as Conf
 
 
 def _get_tags_list(tags_tmpl, tags_val) -> list:
@@ -153,7 +152,7 @@ class TargetObjectExporter:
 
         # Данные для формирования секции "tags""
         tags_val = {}
-        tags: list = _get_tags_list(tags_tmpl=conf.resource_tags, tags_val=tags_val)
+        tags: list = _get_tags_list(tags_tmpl=Conf.resource_tags, tags_val=tags_val)
 
         actual_dttm: str = f"{self.tgt_ctx.src_cd}_actual_dttm".lower()
         # Словарь с доп. параметрами для шаблона
@@ -259,7 +258,7 @@ class MartPackExporter:
                     'cf_flow': 'cf_' + self.exp_obj.mapping_ctx.work_flow_name,
                     'wf_flow': 'wf_' + self.exp_obj.mapping_ctx.work_flow_name, 'alg': self.exp_obj.mapping_ctx.algo}
 
-        self.tags: list = _get_tags_list(tags_tmpl=conf.tags, tags_val=tags_val)
+        self.tags: list = _get_tags_list(tags_tmpl=Conf.tags, tags_val=tags_val)
 
         self._src_exporter = SourceObjectExporter(env, self.exp_obj.src_ctx, self.exp_obj.uni_ctx)
         self._tgt_exporter = TargetObjectExporter(env=env, ctx=self.exp_obj.tgt_ctx, uni_ctx=self.exp_obj.uni_ctx)

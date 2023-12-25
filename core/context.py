@@ -3,7 +3,7 @@ from dataclasses import dataclass, KW_ONLY, field
 
 import pandas
 
-import config as conf
+from config import Config as Conf
 from core.exceptions import IncorrectMappingException
 
 
@@ -122,9 +122,9 @@ class TargetContext(TableContext):
         super().__post_init__()
 
         # Список полей, которые не будут использоваться для формирования hash
-        ignore_hash_set: dict = conf.setting_up_field_lists.get('ignore_hash_set', dict())
+        ignore_hash_set: dict = Conf.setting_up_field_lists.get('ignore_hash_set', dict())
         # Список полей, которые не включаются в опцию distributed_by / multi_fields
-        ignore_distributed_src: dict = conf.setting_up_field_lists.get('ignore_distributed_src', dict())
+        ignore_distributed_src: dict = Conf.setting_up_field_lists.get('ignore_distributed_src', dict())
 
         # Цикл по списку hub_context
         for row in self.hub_context:
@@ -205,9 +205,9 @@ class MappingContext:
 
         """
         # Список полей целевой таблицы, которые не будут добавлены в секцию field_map шаблона wf.yaml
-        ignore_field_map_ctx_list: dict = conf.setting_up_field_lists.get('ignore_field_map_ctx_list', dict())
+        ignore_field_map_ctx_list: dict = Conf.setting_up_field_lists.get('ignore_field_map_ctx_list', dict())
         # Список полей с описанием, которые БУДУТ добавлены в секцию field_map шаблона wf.yaml
-        add_field_map_ctx_lis: dict = conf.setting_up_field_lists.get('add_field_map_ctx_list', dict())
+        add_field_map_ctx_lis: dict = Conf.setting_up_field_lists.get('add_field_map_ctx_list', dict())
 
         # 0-'Src_attr', 1-'Tgt_attribute', 2-'Tgt_attr_datatype', 3-'Src_attr_datatype', 4-'Expression'
         for row in self.field_map_context:
@@ -259,5 +259,3 @@ class MappingContext:
                                               field_type=fld['field_type']
                                               )
             self.field_map_ctx_list.append(deleted_flg_map)
-
-

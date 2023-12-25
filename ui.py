@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import ttk, SOLID, LEFT
+from tkinter import ttk, SOLID
 from tkinter.messagebox import showinfo, showerror
 from tkinter import filedialog
 import logging
@@ -9,15 +9,15 @@ from jinja2 import TemplateNotFound
 
 from map_gen import mapping_generator
 import core.exceptions as exp
-import config as conf
+from config import Config as Conf
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, env):
+    def __init__(self):
         super().__init__()
 
-        author: str = conf.config.get('author', 'Unknown Author')
-        out_path: str = os.path.abspath(conf.config.get('out_path', '999'))
+        author: str = Conf.config.get('author', 'Unknown Author')
+        out_path: str = os.path.abspath(Conf.config.get('out_path', '999'))
 
         self.out_path = tk.StringVar(value=out_path)
         self.file_path = tk.StringVar()
@@ -25,7 +25,7 @@ class MainWindow(tk.Tk):
         self.load_mode = tk.StringVar(value="increment")
         self.author = tk.StringVar(value=author)
 
-        self.env = env
+        self.env = Conf.env
 
         self.wm_title("Генератор файлов описания потока")
         self.geometry("450x470")
@@ -77,41 +77,51 @@ class MainWindow(tk.Tk):
         author_entry = ttk.Entry(frame, textvariable=self.author, font=("Arial", 10))
         author_entry.pack(fill=tk.X, padx=25)
 
-        start_export_button = tk.Button(
-            frame,
-            text="ЭКСПОРТИРОВАТЬ",
-            command=self._export_mapping
-        )
-        start_export_button.pack(pady=10, anchor='e', padx=25)
+        # Журнал работы программы
+        label_log_file = ttk.Label(frame, text=f'Журнал: {Conf.log_file}', font=("Arial", 10))
+        label_log_file.pack(fill=tk.X, padx=25, pady=10)
 
-        frame_log = tk.Frame(frame,     # Обязательный параметр, который указывает окно для размещения Frame.
+        # Фрейм кнопок
+        frame_key = tk.Frame(frame,     # Обязательный параметр, который указывает окно для размещения Frame.
                              padx=5,    # Задаём отступ по горизонтали.
                              pady=5,    # Задаём отступ по вертикали.
                              borderwidth=0,
                              relief=SOLID
                              )
-        frame_log.pack(anchor='nw', fill='both', padx=5, pady=5)
-        frame_log.columnconfigure(0, weight=5)
-        frame_log.columnconfigure(1, weight=1)
+        frame_key.pack(anchor='nw', fill='both', padx=5, pady=5)
+        frame_key.columnconfigure(0, weight=1)
+        frame_key.columnconfigure(1, weight=1)
+        frame_key.columnconfigure(2, weight=1)
+
+        start_export_button = tk.Button(
+            frame_key,
+            text="Формировать",
+            command=self._export_mapping
+        )
+        start_export_button.grid(row=0, column=0, sticky=tk.E, padx=10)
 
         view_log_button = tk.Button(
-            frame_log,
-            text="Журнал",
+            frame_key,
+            text="Открыть журнал",
             command=self._view_log
         )
         view_log_button.grid(row=0, column=1, sticky=tk.E, padx=10)
 
-        label_log = ttk.Label(frame_log, text=conf.log_file, font=("Arial", 10))
-        label_log.grid(row=0, column=0, sticky=tk.W)
+        exit_button = tk.Button(
+            frame_key,
+            text="Завершить",
+            command=self.destroy
+        )
+        exit_button.grid(row=0, column=2, sticky=tk.E, padx=10)
 
     def _setup_file_path(self):
         self.file_path.set(filedialog.askopenfilename())
 
     @staticmethod
     def _view_log():
-        log_file: str = conf.log_file
-        log_viewer: str = conf.config.get('log_viewer')
-        log_file_cmd: str = conf.config.get('log_file_cmd').replace('{log_file}', f'{log_file}')
+        log_file: str = Conf.log_file
+        log_viewer: str = Conf.config.get('log_viewer')
+        log_file_cmd: str = Conf.config.get('log_file_cmd').replace('{log_file}', f'{log_file}')
         log_cmd: str = f'"{log_viewer} {log_file_cmd}"'
         print(log_cmd)
         os.system(log_cmd)
