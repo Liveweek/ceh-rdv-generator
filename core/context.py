@@ -33,15 +33,16 @@ class HubFieldContext:
     on_full_null: str
     # [4] Имя поля в таблице-источнике
     src_attr: str
-    # [5] Имя схемы hub- таблицы
-    hub_schema: str
-    # [6] Имя_hub_таблицы без схемы
-    hub_name_only: str
-    # [7] Значение для поля short_name в шаблоне
-    hub_short_name: str
-    # [8] Имя поля в hub-таблице
-    hub_field: str
-
+    # [5] Вычисляемое выражение
+    expression: str
+    # [6] Имя схемы hub- таблицы
+    hub_schema: str | None
+    # [7] Имя_hub_таблицы без схемы
+    hub_name_only: str | None
+    # [8] Значение для поля short_name в шаблоне
+    hub_short_name: str | None
+    # [9] Имя поля в hub-таблице
+    hub_field: str | None
 
 @dataclass
 class FieldMapContext:
@@ -122,16 +123,14 @@ class TargetContext(TableContext):
         super().__post_init__()
 
         # Список полей, которые не будут использоваться для формирования hash
-        ignore_hash_set: dict = Conf.setting_up_field_lists.get('ignore_hash_set', dict())
+        ignore_hash_set: list = Conf.setting_up_field_lists.get('ignore_hash_set', list())
         # Список полей, которые не включаются в опцию distributed_by / multi_fields
-        ignore_distributed_src: dict = Conf.setting_up_field_lists.get('ignore_distributed_src', dict())
+        ignore_distributed_src: list = Conf.setting_up_field_lists.get('ignore_distributed_src', list())
 
         # Цикл по списку hub_context
         for row in self.hub_context:
-            # Преобразование элемента списка в класс
-            hub_field = HubFieldContext(*row)
-            self.hub_ctx_list.append(hub_field)
-            self.hub_pool.add(hub_field.hub_name)
+            self.hub_ctx_list.append(row)
+            self.hub_pool.add(row.hub_name)
 
         hub_fields: set = {hub_f.name for hub_f in self.hub_ctx_list}
         fields = {field_ctx.name for field_ctx in self.field_ctx_list}
@@ -148,6 +147,7 @@ class TargetContext(TableContext):
         ignore_list: set = hub_fields.union(not_null_fields, ignore_hash_set)
         # Удаляем поля, которые являются ссылками на hub,  поля not null, поля из списка ignore_hash_set
         self.hash_src_fields = fields.difference(ignore_list)
+        return
 
 
 class UniContext:
@@ -222,7 +222,7 @@ class MappingContext:
                                                 )
                 else:
                     field_map = FieldMapContext(tgt_field=row[1],
-                                                type='value',
+                                                type='column',
                                                 value=row[0],
                                                 field_type=row[2].upper()
                                                 )

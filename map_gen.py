@@ -7,6 +7,8 @@ from core.exceptions import IncorrectMappingException
 from core.exporters import MartPackExporter
 from core.mapping import MappingMeta, MartMapping
 import logging
+from config import Config as Conf
+import re
 
 
 def mapping_generator(
@@ -44,7 +46,7 @@ def mapping_generator(
 
     except Exception as err:
         msg = f"Ошибка чтения данных из файла {file_path}"
-        logging.error(msg)
+        logging.exception(msg)
         raise IncorrectMappingException(msg)
 
     # Данные EXCEL
@@ -52,6 +54,9 @@ def mapping_generator(
 
     # Список целевых таблиц
     map_objects: list[str] = mapping_meta.get_tgt_tables_list()
+
+    # Список шаблонов имен потоков и/или имен потоков, которые будут обработаны
+    wf_templates_list = Conf.config.get('wf_templates_list', list('.+'))
 
     # Цикл по списку целевых таблиц
     for tbl_index, tbl_name in enumerate(map_objects):
@@ -68,11 +73,17 @@ def mapping_generator(
             raise Exception("Имя источника не определено")
 
         # Имя потока без wf_/cf_
-        work_flow_name: str | None = mapping_meta.get_flow_name_by_table(tbl_name)
+        full_name: str | None = mapping_meta.get_flow_name_by_table(tbl_name)
+        work_flow_name = re.sub(r"^wf_", '', full_name)
 
         if not work_flow_name:
             logging.error(f'Для таблицы {tbl_name} неверно задано/не задано поле "Название потока"/Flow_name ')
             raise Exception("Имя потока не определено")
+
+        # Фильтр по шаблону имени потока из файла конфигурации
+        if not [True for pattern in wf_templates_list if re.match(pattern, full_name)]:
+            logging.info(f'Поток "{full_name}" обрабатываться не будет, т.к. не соответствует ги одному из шаблонов')
+            continue
 
         # Название схемы источника (берется из названия таблицы)
         source_system_schema: str | None = mapping_meta.get_source_system_schema_by_table(tbl_name)

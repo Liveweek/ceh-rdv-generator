@@ -7,17 +7,17 @@ encoding: 'utf-8'
 
 # Ссылки/Якоря #########################################################################################################
 
-# Автор проекта - редактировать здесь. Отступ обязателен
+# Автор проекта - редактировать здесь. Отступ обязателен во 2 строке
 anchor_author: &author
-  "Автор Потока"
+  "Автор здесь!"
 
 # Команда проекта - редактировать здесь
 anchor_team: &team
-  "Имя Команды"
+  "zi21"
 
 # СУБО - Слой устойчивых бизнес операций - редактировать здесь
 anchor_subo: &subo
-  "subo1364"
+  "subo1742"
 
 # Предметная область (https://wiki.corp.dev.vtb/pages/viewpage.action?pageId=647395081)
 # редактировать здесь
@@ -42,11 +42,11 @@ log_viewer: '"C:\Program Files\Notepad++\notepad++.exe"'
 # Имя файла необходимо заключить в двойные кавычки (возможны отличии в разных OS)
 log_file_cmd: '-ro "{log_file}"'
 # Файл журнала
-log_file: "   "
+log_file: "generator.log"
 
 # Каталог, в котором будут создаваться подкаталоги потоков
 # Если задан не "абсолютный" путь, то каталог создается "рядом" с файлом main.py
-out_path: "999"
+out_path: "E:\\Projects\\SUBO_1742"
 
 # Набор строк для секции metadata.tags в файлах потока cf/wf
 # Можно изменить порядок строк, добавить свою строку без переменных
@@ -123,7 +123,7 @@ setting_up_field_lists:
 
 field_type_list:
   # Список предопределенных "связок" поле - тип поля для целевой таблицы.
-  # Если поле присутствует, то его тип должен соответствовать типу заданному списке
+  # Поле должно присутствовать и его тип должен соответствовать типу заданному списке
   tgt_attr_predefined_datatype: {
     effective_dttm: [ "timestamp", "not null" ],
     hash_diff: [ "char(32)", "not null" ],
@@ -140,17 +140,18 @@ field_type_list:
   # Список предопределенных "связок" поле - тип поля для источника.
   # Используется для контроля заполнения EXCEL. Поля должны присутствовать!
   src_attr_predefined_datatype: {
-    changeid: [ "string"],
-    changetimestamp: [ "string"],
-    changetype: [ "string"],
-    hdp_processed_dttm: [ "string"],
+    changeid: ["string"],
+    changetimestamp: ["string"],
+    changetype: ["string"],
+    hdp_processed_dttm: ["timestamp"]
   }
 
   # Список возможных значений колонки "Src_attr_datatype"
-  src_attr_datatype: ['string', 'timestamp', 'bigint']
+  src_attr_datatype: ['string', 'timestamp', 'bigint', 'decimal']
 
 # Список имен колонок на листах файла EXCEL, которые должны присутствовать
 # Регистр букв важен!
+# Названия колонок используются в программе, так что менять их без изменения кода нельзя
 excel_data_definition:
   columns: {
     'Детали загрузок Src-RDV': [
@@ -183,3 +184,13 @@ excel_data_definition:
         'Source_name'
     ]
   }
+
+# Список потоков в виде шаблонов (в виде regular expression), которые будут обрабатываться
+# ".+" - все потоки
+# Если задается полное имя потока, то в начале ставится знак "^", а в конце - "$"
+# Иначе поиск будет вестись по совпадению любой части имени с шаблоном
+# Корректность имен не проверяется
+wf_templates_list:
+  # - "^wf_serv_usns_dapp_rdv_usns_taxemployeepaymentfnsinstruction$"
+  - "^wf_serv_usns_dapp_rdv_usns_taxoperationpaymentfnsinstruction$"
+  - "^wf_serv_usns_dapp_rdv_usns_taxpaymentfnsapplication$"

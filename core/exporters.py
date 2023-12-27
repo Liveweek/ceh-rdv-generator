@@ -119,7 +119,7 @@ class TargetObjectExporter:
         for hub in self.tgt_ctx.hub_ctx_list:
             template = self.env.get_template(self.template_hub_yaml)
             output = template.render(hub=hub, values=values)
-            file_name: str = os.path.join(path, f'ceh.{hub.hub_name}.yaml')
+            file_name: str = os.path.join(path, f'{hub.hub_name_only}.yaml')
             with open(file_name, "w", encoding="utf-8") as f:
                 f.write(output)
 
