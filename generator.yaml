@@ -9,7 +9,7 @@ encoding: 'utf-8'
 
 # Автор проекта - редактировать здесь. Отступ обязателен во 2 строке
 anchor_author: &author
-  "Автор здесь!"
+  "Автор"
 
 # Команда проекта - редактировать здесь
 anchor_team: &team
@@ -191,6 +191,6 @@ excel_data_definition:
 # Иначе поиск будет вестись по совпадению любой части имени с шаблоном
 # Корректность имен не проверяется
 wf_templates_list:
-  # - "^wf_serv_usns_dapp_rdv_usns_taxemployeepaymentfnsinstruction$"
+  - "^wf_serv_usns_dapp_rdv_usns_taxemployeepaymentfnsinstruction$"
   - "^wf_serv_usns_dapp_rdv_usns_taxoperationpaymentfnsinstruction$"
   - "^wf_serv_usns_dapp_rdv_usns_taxpaymentfnsapplication$"
