@@ -60,6 +60,7 @@ def mapping_generator(
 
     # Цикл по списку целевых таблиц
     for tbl_index, tbl_name in enumerate(map_objects):
+        logging.info('>>>>> Begin >>>>>')
         logging.info(f"{tbl_index} {tbl_name}")
 
         # Данные для заданной целевой таблицы
@@ -82,7 +83,7 @@ def mapping_generator(
 
         # Фильтр по шаблону имени потока из файла конфигурации
         if not [True for pattern in wf_templates_list if re.match(pattern, full_name)]:
-            logging.info(f'Поток "{full_name}" обрабатываться не будет, т.к. не соответствует ги одному из шаблонов')
+            logging.info(f'Поток "{full_name}" обрабатываться не будет, т.к. не соответствует ни одному из шаблонов')
             continue
 
         # Название схемы источника (берется из названия таблицы)
@@ -103,7 +104,6 @@ def mapping_generator(
         )
 
         # Каталог для файлов
-        # out_path_tbl = os.path.join(Path(__file__).parent, out_path, tbl_name)
         out_path_tbl = os.path.join(out_path, tbl_name)
         logging.info(f'Каталог потока {work_flow_name}: {out_path_tbl}')
 
@@ -117,3 +117,5 @@ def mapping_generator(
         # Вывод данных в файлы
         mp_exporter.load()
         logging.info(f'Файлы потока {work_flow_name} сформированы')
+        logging.info('<<<<< End <<<<<')
+        logging.info('')

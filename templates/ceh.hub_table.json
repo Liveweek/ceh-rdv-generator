@@ -59,9 +59,9 @@
         }
     ],
     "metrics": {
-        "rdv_actual_dttm": {
-            "id": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}:{{hub.actual_dttm_name}}",
-            "query": "[.version.operations[].source.conf.by_src[].{{values.actual_dttm_name}} | values] | min",
+        "{{values.actual_dttm_name}}": {
+            "id": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}:{{values.actual_dttm_name}}",
+            "query": "[.last_sources[].conf.by_src | select(. != null) | .[] | to_entries | .[] | select(.key == \"{{values.actual_dttm_name}}\" and .value != \"default_value\" and .value != null).value] | min",
             "default": "default_value"
         }
     },

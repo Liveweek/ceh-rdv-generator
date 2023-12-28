@@ -160,7 +160,7 @@ class TargetObjectExporter:
 
         # Ресурс целевой mart - таблицы
         template = self.env.get_template(self.template_name_json)
-        output = template.render(ctx=self.tgt_ctx, uni_ctx=self.uni_ctx, tags=tags)
+        output = template.render(ctx=self.tgt_ctx, uni_ctx=self.uni_ctx, values=values, tags=tags)
         file_name: str = os.path.join(path, f'ceh.{self.tgt_ctx.schema}.{self.tgt_ctx.name}.json')
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)

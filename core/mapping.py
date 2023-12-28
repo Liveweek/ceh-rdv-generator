@@ -396,7 +396,7 @@ class MartMapping:
             h_name: str
 
             if not re.match(bk_object_pattern, hh[2]):
-                logging.error(f"Значение в поле 'Attr:BK_Object' не соответствует шаблону '{bk_object_pattern}'")
+                logging.error(f"Значение hub_name '{hh[2]}' в поле 'Attr:BK_Object' не соответствует шаблону '{bk_object_pattern}'")
                 raise IncorrectMappingException("Ошибка в структуре данных EXCEL")
             else:
                 h_schema, h_name = hh[2].split('.')
@@ -435,8 +435,17 @@ class MartMapping:
         # Удаление дубликатов в списке полей
         src_attr = src_attr.drop_duplicates(subset=['Src_attr'])
 
-        # Проверяем обязательные поля
         is_error: bool = False
+        # Проверяем соответствие названия полей шаблону
+        pattern: str = r"^[a-zA-Z][a-zA-Z0-9_]*$"
+        err_rows = src_attr[~src_attr.Src_attr.str.match(pattern)]
+        if len(err_rows) > 0:
+            logging.error(f"Названия полей в таблице - источнике '{src_tbl_name}' не соответствуют шаблону '{pattern}'")
+            for index, fld_name in err_rows['Src_attr'].items():
+                logging.error(fld_name)
+            is_error = True
+
+        # Проверяем обязательные поля
         src_attr_predefined_datatype: dict = Config.field_type_list.get('src_attr_predefined_datatype', dict())
         for fld_name in src_attr_predefined_datatype.keys():
             err_rows = src_attr.query(f"Src_attr == '{fld_name}'")

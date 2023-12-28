@@ -20,7 +20,9 @@
     "metrics": {
         "is_locked": "{{ '{{' }} metrics.is_locked | for_instance('{{ ctx.instance }}', resource_cd='{{ ctx.source }}.{{ ctx.schema }}.{{ ctx.table_name }}') {{ '}}' }}",
         "locked_by": "{{ '{{' }} metrics.locked_by | for_instance('{{ ctx.instance }}', resource_cd='{{ ctx.source }}.{{ ctx.schema }}.{{ ctx.table_name }}') {{ '}}' }}",
+
         "dataset_max_date_to": "{{ '{{' }} metrics.dapp_rp_dataset_max_date_to | for_instance('{{ ctx.instance }}', database={{ ctx.instance }}.schema, table='{{ ctx.table_name }}') {{ '}}' }}",
+
         "{{ ctx.actual_dttm_name }}": {
             "id": "{{ ctx.source }}.{{ ctx.schema }}.{{ ctx.table_name }}.{{ ctx.actual_dttm_name }}",
             "connection": "arena_conn",
