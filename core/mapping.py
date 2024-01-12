@@ -308,10 +308,19 @@ class MartMapping:
             is_error = True
 
         # Проверка признака первичного ключа
-        err_rows = tgt[~tgt['Tgt_PK'].isin(['pk', numpy.nan, 'fk_rk', 'fk'])]
+        err_rows = tgt[~tgt['Tgt_PK'].isin(['pk', numpy.nan, 'fk'])]
         if len(err_rows) > 0:
             logging.error(f"Неверно указан признак 'Tgt_PK' для целевой таблицы '{self.mart_name}':")
-            logging.error("Допустимые значения: 'fk_rk'/'fk'/'pk'/'пустая ячейка'")
+            logging.error("Допустимые значения: 'fk'/'pk'/'пустая ячейка'")
+            for line in str(err_rows).splitlines():
+                logging.error(line)
+            is_error = True
+
+        # Проверка: Поля 'fk'/'pk' должны быть not null
+        err_rows = tgt.query('Tgt_PK in ["pk", "fk"] and Tgt_attr_mandatory != "not null"')
+        if len(err_rows) > 0:
+            logging.error(f"Неверно указан признак 'Tgt_attr_mandatory' для целевой таблицы '{self.mart_name}':")
+            logging.error("Поля отмеченные как 'fk'/'pk'/' должны быть 'not null'")
             for line in str(err_rows).splitlines():
                 logging.error(line)
             is_error = True
@@ -369,7 +378,8 @@ class MartMapping:
         # Не используйте разные "знаки" в именах полей ...
         # hub: pd.DataFrame = self.mart_mapping.query("Attr:Conversion_type == 'hub'")
         hub: pd.DataFrame = self.mart_mapping[self.mart_mapping['Attr:Conversion_type'] == 'hub']
-        hub = hub[['Tgt_attribute', 'Attr:BK_Schema', 'Attr:BK_Object', 'Attr:nulldefault', 'Src_attr', 'Expression']]
+        hub = hub[['Tgt_attribute', 'Attr:BK_Schema', 'Attr:BK_Object', 'Attr:nulldefault', 'Src_attr',
+                   'Expression', 'Tgt_PK']]
         hub_list = hub.to_numpy().tolist()
 
         # Проверяем корректность имен
@@ -398,7 +408,8 @@ class MartMapping:
                                                        hub_schema=None,
                                                        hub_name_only=None,
                                                        hub_short_name=None,
-                                                       hub_field=None)
+                                                       hub_field=None,
+                                                       is_bk='true' if hh[6] == 'pk' else 'false')
 
             h_schema: str
             h_name: str

@@ -46,7 +46,7 @@ hub_fields:
   - name: {{ hub_field.name }}
     hub_table: {{ hub_field.hub_name_only }}
     hub_schema: {{ hub_field.hub_schema }}
-    is_bk: true
+    is_bk: {{ hub_field.is_bk }}
 {%- endfor %}
 {%- else %}
 hub_fields: []

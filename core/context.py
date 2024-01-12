@@ -43,6 +43,9 @@ class HubFieldContext:
     hub_short_name: str | None
     # [9] Имя поля в hub-таблице
     hub_field: str | None
+    # [10] Если поле входит в PK mart-таблицы, то True
+    is_bk: str | None
+
 
 @dataclass
 class FieldMapContext:
@@ -136,12 +139,15 @@ class TargetContext(TableContext):
         fields = {field_ctx.name for field_ctx in self.field_ctx_list}
         not_null_fields = {field_ctx.name for field_ctx in self.field_ctx_list if field_ctx.is_nullable is False}
 
-        # Список первичных ключей для опции distributed by / multi_fields
+        # Список первичных ключей для опции multi_fields. Поля, которые являются ссылками на hub - не включаются
         self.multi_fields = {field_ctx.name for field_ctx in self.field_ctx_list
                              if field_ctx.pk == "pk" and
-                             field_ctx.name not in ignore_distributed_src}
+                             field_ctx.name not in ignore_distributed_src and
+                             field_ctx.name not in hub_fields}
 
-        self.distributed_by = ','.join(self.multi_fields)
+        # Список первичных ключей для опции distributed by
+        self.distributed_by = ','.join({field_ctx.name for field_ctx in self.field_ctx_list
+                                        if field_ctx.pk == "pk" and field_ctx.name not in ignore_distributed_src})
 
         # Поля, которые не входят в hash
         ignore_list: set = hub_fields.union(not_null_fields, ignore_hash_set)
