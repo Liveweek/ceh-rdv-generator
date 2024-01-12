@@ -126,7 +126,6 @@ class MappingMeta:
         Возвращает список (DataFrame) строк для заданной целевой таблицы
         """
         df: DataFrame = self.mapping_df[self.mapping_df['Tgt_table'] == table_name].dropna(how="all")
-        # return self.mapping_df.where(self.mapping_df.Tgt_table == table_name).dropna(how="all")
         return df
 
     def get_flow_name_by_table(self, table_name: str) -> str | None:
@@ -342,6 +341,15 @@ class MartMapping:
                         logging.error(line)
                     is_error = True
 
+        # Проверяем соответствие названия полей целевой таблицы шаблону
+        pattern: str = Config.field_type_list.get('tgt_arrt_name_regexp', r"^[a-zA-Z][a-zA-Z0-9_]*$")
+        err_rows = tgt[~tgt.Tgt_attribute.str.match(pattern)]
+        if len(err_rows) > 0:
+            logging.error(f"Названия полей целевой таблицы '{self.mart_name}' не соответствуют шаблону '{pattern}'")
+            for index, fld_name in err_rows['Tgt_attribute'].items():
+                logging.error(fld_name)
+            is_error = True
+
         if is_error:
             raise IncorrectMappingException(f"Неверно указаны атрибуты для целевой таблицы '{self.mart_name}'")
 
@@ -436,8 +444,8 @@ class MartMapping:
         src_attr = src_attr.drop_duplicates(subset=['Src_attr'])
 
         is_error: bool = False
-        # Проверяем соответствие названия полей шаблону
-        pattern: str = r"^[a-zA-Z][a-zA-Z0-9_]*$"
+        # Проверяем соответствие названия полей источника шаблону
+        pattern: str = Config.field_type_list.get('src_arrt_name_regexp', r"^[a-zA-Z][a-zA-Z0-9_]*$")
         err_rows = src_attr[~src_attr.Src_attr.str.match(pattern)]
         if len(err_rows) > 0:
             logging.error(f"Названия полей в таблице - источнике '{src_tbl_name}' не соответствуют шаблону '{pattern}'")

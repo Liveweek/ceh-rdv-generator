@@ -60,6 +60,9 @@ def mapping_generator(
 
     # Цикл по списку целевых таблиц
     for tbl_index, tbl_name in enumerate(map_objects):
+        if tbl_index > 0:
+            logging.info('')
+
         logging.info('>>>>> Begin >>>>>')
         logging.info(f"{tbl_index} {tbl_name}")
 
@@ -71,7 +74,7 @@ def mapping_generator(
         if not src_cd:
             logging.error(f'Для таблицы {tbl_name} неверно задано/не задано имя источника')
             logging.error('Имя источника задается в колонке "Expression" для поля "src_cd"')
-            raise Exception("Имя источника не определено")
+            raise IncorrectMappingException("Имя источника не определено")
 
         # Имя потока без wf_/cf_
         full_name: str | None = mapping_meta.get_flow_name_by_table(tbl_name)
@@ -79,7 +82,7 @@ def mapping_generator(
 
         if not work_flow_name:
             logging.error(f'Для таблицы {tbl_name} неверно задано/не задано поле "Название потока"/Flow_name ')
-            raise Exception("Имя потока не определено")
+            raise IncorrectMappingException("Имя потока не определено")
 
         # Фильтр по шаблону имени потока из файла конфигурации
         if not [True for pattern in wf_templates_list if re.match(pattern, full_name)]:
@@ -90,7 +93,7 @@ def mapping_generator(
         source_system_schema: str | None = mapping_meta.get_source_system_schema_by_table(tbl_name)
         if not source_system_schema:
             logging.error(f'Для таблицы {tbl_name} неверно задано/не задано имя схемы источника')
-            raise Exception("Имя схемы источника не определено")
+            raise IncorrectMappingException("Имя схемы источника не определено")
 
         # Подготовка данных для файлов для одной таблицы
         exp_obj = MartMapping(
@@ -117,5 +120,6 @@ def mapping_generator(
         # Вывод данных в файлы
         mp_exporter.load()
         logging.info(f'Файлы потока {work_flow_name} сформированы')
-        logging.info('<<<<< End <<<<<')
-        logging.info('')
+
+    logging.info('')
+    
