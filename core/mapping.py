@@ -316,11 +316,11 @@ class MartMapping:
                 logging.error(line)
             is_error = True
 
-        # Проверка: Поля 'fk'/'pk' должны быть not null
-        err_rows = tgt.query('Tgt_PK in ["pk", "fk"] and Tgt_attr_mandatory != "not null"')
+        # Проверка: Поля 'pk' должны быть not null
+        err_rows = tgt.query('Tgt_PK in ["pk"] and Tgt_attr_mandatory != "not null"')
         if len(err_rows) > 0:
             logging.error(f"Неверно указан признак 'Tgt_attr_mandatory' для целевой таблицы '{self.mart_name}':")
-            logging.error("Поля отмеченные как 'fk'/'pk'/' должны быть 'not null'")
+            logging.error("Поля отмеченные как 'pk' должны быть 'not null'")
             for line in str(err_rows).splitlines():
                 logging.error(line)
             is_error = True
@@ -373,13 +373,13 @@ class MartMapping:
          "имя_поля_в_hub"]
         """
 
-        # Ф-ия where в библиотеке pandas не фильтрует записи, а меняет значения полей по условию !!!
+        # Ф-ия "where" в библиотеке pandas не фильтрует записи, а меняет значения полей по условию !!!
         # hub: pd.DataFrame = self.mart_mapping.where(cond=self.mart_mapping['Attr:Conversion_type'] == 'hub')
         # Не используйте разные "знаки" в именах полей ...
         # hub: pd.DataFrame = self.mart_mapping.query("Attr:Conversion_type == 'hub'")
         hub: pd.DataFrame = self.mart_mapping[self.mart_mapping['Attr:Conversion_type'] == 'hub']
         hub = hub[['Tgt_attribute', 'Attr:BK_Schema', 'Attr:BK_Object', 'Attr:nulldefault', 'Src_attr',
-                   'Expression', 'Tgt_PK']]
+                   'Expression', 'Tgt_PK', 'Tgt_attr_datatype']]
         hub_list = hub.to_numpy().tolist()
 
         # Проверяем корректность имен
@@ -409,13 +409,15 @@ class MartMapping:
                                                        hub_name_only=None,
                                                        hub_short_name=None,
                                                        hub_field=None,
-                                                       is_bk='true' if hh[6] == 'pk' else 'false')
+                                                       is_bk='true' if hh[6] == 'pk' else 'false',
+                                                       tgt_type=hh[7])
 
             h_schema: str
             h_name: str
 
             if not re.match(bk_object_pattern, hh[2]):
-                logging.error(f"Значение hub_name '{hh[2]}' в поле 'Attr:BK_Object' не соответствует шаблону '{bk_object_pattern}'")
+                logging.error(f"Значение hub_name '{hh[2]}' в поле 'Attr:BK_Object' не соответствует шаблону "
+                              f"'{bk_object_pattern}'")
                 raise IncorrectMappingException("Ошибка в структуре данных EXCEL")
             else:
                 h_schema, h_name = hh[2].split('.')

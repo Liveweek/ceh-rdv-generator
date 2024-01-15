@@ -86,6 +86,7 @@ class TargetObjectExporter:
 
     template_name_yaml: str = 'mart.yaml'               # Название шаблона описания март-таблицы
     template_hub_yaml: str = 'hub.yaml'                 # Название шаблона описания хаб-таблицы
+    template_hub_create_sql: str = 'hub_create.sql'     # Название шаблона создания/заполнения хаб-таблицы
     template_name_sql: str = 'mart_ddl.sql'             # Название шаблона скрипта создания март-таблицы
     template_name_json: str = 'ceh_res.json'            # Название шаблона ресурса CEH
     template_hub_json: str = 'ceh.hub_table.json '      # Название шаблона ресурса хаб-таблицы
@@ -115,11 +116,22 @@ class TargetObjectExporter:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
 
-        # Файлы описания хеш-таблиц
+        # Файлы описания хаб-таблиц
         for hub in self.tgt_ctx.hub_ctx_list:
             template = self.env.get_template(self.template_hub_yaml)
             output = template.render(hub=hub, values=values)
             file_name: str = os.path.join(path, f'{hub.hub_name_only}.yaml')
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(output)
+
+    def export_hub_sql(self, path):
+        os.makedirs(path, exist_ok=True)
+        # Файлы описания хаб-таблиц
+        for hub in self.tgt_ctx.hub_ctx_list:
+            # Создание/заполнение хаб-таблиц
+            template = self.env.get_template(self.template_hub_create_sql)
+            output = template.render(hub=hub)
+            file_name: str = os.path.join(path, f'{hub.hub_name_only}.sql')
             with open(file_name, "w", encoding="utf-8") as f:
                 f.write(output)
 
@@ -128,9 +140,13 @@ class TargetObjectExporter:
 
         template = self.env.get_template(self.template_name_sql)
         output = template.render(ctx=self.tgt_ctx)
-        file_name: str = os.path.join(path, self.tgt_ctx.name + '.sql')
+        file_name: str = os.path.join(path, '01-' + self.tgt_ctx.name + '.sql')
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)
+
+        file_name: str = os.path.join(path, '02-gen_access_view.sql')
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write('-- Скрипт формирования акцессоров должен быть здесь!')
 
     def export_sql_view(self, path):
         """
@@ -286,6 +302,10 @@ class MartPackExporter:
         # Скрипт создания целевой таблицы (mart)
         exp_path = os.path.join(self.path, r"adgp\extensions\ripper\.data")
         self._tgt_exporter.export_sql(exp_path)
+
+        # Необязательные скрипты создания/заполнения hub - таблиц
+        exp_path = os.path.join(self.path, r"src\hub")
+        self._tgt_exporter.export_hub_sql(exp_path)
 
         # Скрипт для формирования view на целевую таблицу
         exp_path = os.path.join(self.path, r"src")

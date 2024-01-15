@@ -45,7 +45,8 @@ class HubFieldContext:
     hub_field: str | None
     # [10] Если поле входит в PK mart-таблицы, то True
     is_bk: str | None
-
+    # [11] Тип поля в целевой таблице
+    tgt_type: str | None
 
 @dataclass
 class FieldMapContext:
@@ -150,7 +151,7 @@ class TargetContext(TableContext):
                                         if field_ctx.pk == "pk" and field_ctx.name not in ignore_distributed_src})
 
         # Поля, которые не входят в hash
-        ignore_list: set = hub_fields.union(not_null_fields, ignore_hash_set)
+        ignore_list: set = not_null_fields.union(ignore_hash_set)
         # Удаляем поля, которые являются ссылками на hub,  поля not null, поля из списка ignore_hash_set
         self.hash_src_fields = fields.difference(ignore_list)
         return

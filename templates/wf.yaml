@@ -91,6 +91,7 @@ mappings:
           on_full_null: {{ hub_field.on_full_null }}
           field_map:
             {{ hub_field.hub_field }}:
+            {%- if hub_field.tgt_type == "TEXT" %}
               type: sql_expression
               value: | 
                 case 
@@ -103,6 +104,16 @@ mappings:
                   {% endif -%}
                 end
               field_type: TEXT
+            {%- else %}
+              {% if hub_field.src_attr -%}
+              type: column
+              value: {{ hub_field.src_attr }}
+              {% else -%}
+              type: sql_expression
+              value: {{ hub_field.expression }}
+              {% endif -%}
+            {% endif -%}
+
         {% endfor %}
 {%- else %}
       hub_map: []
