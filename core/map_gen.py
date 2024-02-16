@@ -100,7 +100,8 @@ def mapping_generator(
 
         # Имя потока без wf_/cf_
         flow_name: str | None = stream_data.flow_name
-        base_flow_name = re.sub(r"^wf_", '', flow_name)
+
+        base_flow_name = flow_name.removeprefix('wf_')
         if not base_flow_name:
             logging.error(f'Для таблицы {tgt_table} неверно задано/не задано поле "Название потока"/Flow_name ')
             raise IncorrectMappingException("Имя потока не определено")

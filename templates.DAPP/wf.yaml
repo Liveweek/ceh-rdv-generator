@@ -33,7 +33,6 @@ targets:
     resource_cd: ceh.{{ hub.hub_name }}
   {% endfor %}
 
-{% if ctx.data_capture_mode == 'increment' %}
 local_metrics:
 
   wf_dataset_max_date_to:

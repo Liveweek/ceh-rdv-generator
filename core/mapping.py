@@ -35,6 +35,7 @@ class StreamData:
     comment: str
 
     def __init__(self, df: pd.DataFrame, tgt_table: str):
+
         self.row = df.query(f'tgt_table == "{tgt_table}"')
         if len(self.row) == 0:
             logging.error(f"Не найдено имя целевой таблицы '{tgt_table}' "
@@ -46,9 +47,9 @@ class StreamData:
                           "'Перечень загрузок Src-RDV'")
             raise IncorrectMappingException("Найдено несколько строк для целевой таблицы")
 
-        self.row_dict = df.to_dict('records')[0]
-        self.mapping_ver = self.row_dict["mapping_ver"]
-        self.mapping_ver_to = self.row_dict["mapping_ver_to"]
+        self.row_dict = self.row.to_dict('records')[0]
+        # self.mapping_ver = self.row_dict["mapping_ver"]
+        # self.mapping_ver_to = self.row_dict["mapping_ver_to"]
         self.algorithm_uid = re.sub(r"\s", '', self.row_dict["algorithm_uid"])
         self.subalgorithm_uid = self.row_dict["subalgorithm_uid"]
         self.flow_name = re.sub(r"\s", '', self.row_dict["flow_name"])
@@ -57,11 +58,10 @@ class StreamData:
         self.src_table = re.sub(r"\s", '', self.row_dict["src_table"])
         self.source_name = re.sub(r"\s", '', self.row_dict["source_name"])
         self.scd_type = re.sub(r"\s", '', self.row_dict["scd_type"])
-        self.algo_name = self.row_dict["algo_name"]
-        self.data_filtering = self.row_dict["data_filtering"]
-        self.distribution_field = self.row_dict["distribution_field"]
-        self.comment = self.row_dict["comment"]
-
+        # self.algo_name = self.row_dict["algo_name"]
+        # self.data_filtering = self.row_dict["data_filtering"]
+        # self.distribution_field = self.row_dict["distribution_field"]
+        # self.comment = self.row_dict["comment"]
 
 def _generate_mapping_df(file_data: bytes, sheet_name: str):
     """
