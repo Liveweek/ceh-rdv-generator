@@ -1,5 +1,7 @@
+# Для источника DAPP и схожих с ним
+
 ########################################################################################################################
-# Файл настроек программы ceh-rdv-generator
+# Файл настроек программы ceh-rdv-generator 
 ########################################################################################################################
 
 # Кодировку файла не менять !!!
@@ -38,7 +40,7 @@ area: *area
 
 # Ссылка на каталог с шаблонами
 # По умолчанию шаблоны берутся из каталога templates, который находится "рядом" с main.py
-templates: templates
+templates: E:\GitHub\ceh-rdv-generator\templates.DAPP 
 
 # Программа для отображения log-файла. Если строка содержит пробелы, то заключить в двойные кавычки.
 # Работу на linux не проверял ...
@@ -144,9 +146,6 @@ field_type_list:
     valid_flg: [ "boolean", "not null" ]
   }
 
-  # Список возможных значений колонки "Tgt_attr_datatype"
-  tgt_attr_datatype: ['text', 'timestamp', 'char(32)', 'bigint', 'boolean', 'integer', 'decimal']
-
   # Список предопределенных "связок" поле - тип поля для источника.
   # Используется для контроля заполнения EXCEL.
   # Поля должны присутствовать!
@@ -166,6 +165,20 @@ field_type_list:
   # Список возможных значений колонки "Src_attr_datatype"
   # Внимание! Фрейм поддерживает ограниченной количество типов.
   src_attr_datatype: ['string', 'timestamp', 'bigint', 'decimal']
+
+  # Список возможных значений колонки "Tgt_attr_datatype"
+  tgt_attr_datatype: ['text', 'timestamp', 'char(32)', 'bigint', 'boolean', 'integer', 'decimal']
+
+  # Список "корреспонденций" типов данных источника и целевой таблицы
+  # Если "пара" типа данных источника и целевой таблицы (из EXCEL) не найдена в списке, то выдается
+  # "мягкое" предупреждение
+  corresp_datatype : {
+            'string': ['text'],
+            'timestamp': ['timestamp'],
+            'bigint': ['bigint'],
+            'decimal': ['decimal'],
+            'date': ['date']
+  }
 
 # Список имен колонок на листах файла EXCEL, которые должны присутствовать
 # Регистр букв важен!
@@ -211,9 +224,9 @@ excel_data_definition:
 # Корректность имен не проверяется
 # Список нужен для того, что-бы формировать только "свои" потоки из EXCEL - файла маппинга
 wf_templates_list:
-#  - ".+"
-  - "^wf_serv_usns_dapp_rdv_usns_taxemployeepaymentfnsinstruction$"
-  - "^wf_serv_usns_dapp_rdv_usns_taxoperationpaymentfnsinstruction$"
-  - "^wf_serv_usns_dapp_rdv_usns_taxpaymentfnsapplication$"
+  - ".+"
+#  - "^wf_serv_usns_dapp_rdv_usns_taxemployeepaymentfnsinstruction$"
+#  - "^wf_serv_usns_dapp_rdv_usns_taxoperationpaymentfnsinstruction$"
+#  - "^wf_serv_usns_dapp_rdv_usns_taxpaymentfnsapplication$"
 
 

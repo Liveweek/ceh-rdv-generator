@@ -1,3 +1,4 @@
+-- drop table if exists {{ ctx.schema }}.{{ ctx.name }} cascade;
 CREATE TABLE {{ ctx.schema }}.{{ ctx.name }} (
 {%- for field in ctx.field_ctx_list %}
   {{ field.name.lower() }} {{  field.datatype.lower() }}

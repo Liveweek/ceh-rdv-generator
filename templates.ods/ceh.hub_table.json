@@ -1,0 +1,69 @@
+{
+    "resource_cd": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}",
+    "resource_desc": "Хаб {{hub.hub_schema}}.{{hub.hub_name_only}}",
+    "tags": [
+{%- if tags|length > 0 %}
+{%- for tag in tags %}
+        {{tag}}{%- if not loop.last -%},{% endif -%}
+{%- endfor %}
+{%- endif %}
+    ],
+    "features": {
+        "domain": "{{hub.hub_schema}}"
+    },
+    "is_readonly": false,
+    "datasets": [
+        {
+            "name": "{{hub.hub_name_only}}",
+            "schema_name": "{{hub.hub_schema}}",
+            "filter": "",
+            "columns": [
+                {
+                    "name": "version_id",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "invalid_id",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "bk_type",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "src_cd",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "{{hub.hub_field}}",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "{{hub.name}}",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                }
+            ],
+            "physical_options": ""
+        }
+    ],
+    "metrics": {
+        "{{values.actual_dttm_name}}": {
+            "id": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}:{{values.actual_dttm_name}}",
+            "query": "[.last_sources[].conf.by_src | select(. != null) | .[] | to_entries | .[] | select(.key == \"{{values.actual_dttm_name}}\" and .value != \"default_value\" and .value != null).value] | min",
+            "default": "default_value"
+        }
+    },
+    "is_deleted": false
+}

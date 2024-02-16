@@ -15,15 +15,19 @@ class Config:
     log_file: str
     env: any
     templates_path: str
+    excel_file: str
+    config_file: str
+    is_warning: bool = False
 
     @staticmethod
     def load_config(config_name: str):
 
         if not os.path.exists(config_name):
-            msg = 'Не найден файл конфигурации программы "{config_name}"'
+            msg = f'Не найден файл конфигурации программы "{config_name}"'
             print(msg)
             raise FileExistsError(msg)
 
+        Config.config_file = config_name
         with open(config_name, 'r', encoding='utf-8') as f:
             Config.config = yaml.safe_load(f)
 
@@ -33,6 +37,8 @@ class Config:
         Config.setting_up_field_lists = Config.config.get('setting_up_field_lists', dict())
         Config.field_type_list = Config.config.get('field_type_list', dict())
         Config.excel_data_definition = Config.config.get('excel_data_definition', dict())
+
+        Config.excel_file = Config.config.get('excel_file', '')
 
         # "Загрузка" файлов-шаблонов
         Config.templates_path = os.path.abspath(Config.config.get('templates', 'templates'))

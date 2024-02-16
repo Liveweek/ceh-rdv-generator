@@ -2,8 +2,8 @@ import argparse
 import logging
 import os
 
-from config import Config
-from ui import MainWindow
+from core.config import Config
+from core.ui import MainWindow
 
 
 def main() -> int:

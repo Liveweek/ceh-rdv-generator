@@ -1,5 +1,3 @@
-{# Необходимо прописать (в кавычках) название поля в источнике по которому осуществляется фильтрация данных по дате #}
-{%- set ns = namespace(processed_dt='hdp_processed_dttm') -%}
 name: {{ wf_file }}
 type: WORK_FLOW
 schema_version: '1.13'
@@ -33,16 +31,15 @@ targets:
     schema: {{ hub.hub_schema }}
     table: {{ hub.hub_name_only }}
     resource_cd: ceh.{{ hub.hub_name }}
-  {% endfor -%}
+  {% endfor %}
 
 {% if ctx.data_capture_mode == 'increment' %}
 local_metrics:
 
   wf_dataset_max_date_to:
     target: stage_T_input
-    query: max(date_trunc('second', {{ ns.processed_dt }}))
-    on_null: .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".dataset_max_date_to
-{% endif %}
+    query: max({{ uni_ctx.hdp_processed }})
+    on_null: .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema.upper() }}.{{ ctx.src_name.upper() }}".wf_dataset_max_date_to
 
 mappings:
   marts:
@@ -53,13 +50,12 @@ mappings:
       source: src_tb 
       delta_mode: {{ ctx.delta_mode }}
 
-      {% if ctx.data_capture_mode == "increment"%}
       where_clause:
         engine: jq
         template: |
-          {{ ns.processed_dt }} >= '{from}' 
+          {{ uni_ctx.hdp_processed }} >= '{from}' 
           and 
-          {{ ns.processed_dt }} < '{to}'
+          {{ uni_ctx.hdp_processed }} < '{to}'
         vars:
           from: |
             .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema }}.{{ ctx.src_name }}".wf_dataset_max_date_to
@@ -70,7 +66,17 @@ mappings:
         by_src:
           - save_as: wf_dataset_max_date_to
             metric:  wf_dataset_max_date_to
-      {% endif %}
+
+      synthetic_history:
+        syn_history_function: rdv.syn_bussiness_date_trunc
+        func_param:
+          - param_source: field
+            param_value: {{ uni_ctx.hdp_processed }}
+          - param_source: const
+            param_value: {{ uni_ctx.hdp_processed_conversion }} 
+
+      history_reducer: ods_reducer
+
       field_map:
       {% for field in ctx.field_map_ctx_list %}
         {{ field.tgt_field }}:

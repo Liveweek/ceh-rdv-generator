@@ -6,7 +6,7 @@ from .mapping import MartMapping
 from .context import SourceContext, TargetContext, MappingContext, UniContext
 
 import yaml
-from config import Config as Conf
+from core.config import Config as Conf
 
 
 def _get_tags_list(tags_tmpl, tags_val) -> list:
@@ -252,7 +252,7 @@ class MappingObjectExporter:
         os.makedirs(path, exist_ok=True)
 
         file_name: str = os.path.join(path, self.wf_file + '.py')
-        shutil.copy('./templates/wf.py', file_name)
+        shutil.copy(os.path.join(Conf.templates_path, 'wf.py'), file_name)
 
 
 class MartPackExporter:

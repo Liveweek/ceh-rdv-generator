@@ -1,15 +1,15 @@
 import os
 import tkinter as tk
 from tkinter import ttk, SOLID
-from tkinter.messagebox import showinfo, showerror
+from tkinter.messagebox import showinfo, showerror, showwarning
 from tkinter import filedialog
 import logging
 
 from jinja2 import TemplateNotFound
 
-from map_gen import mapping_generator
+from core.map_gen import mapping_generator
 import core.exceptions as exp
-from config import Config as Conf
+from core.config import Config as Conf
 
 
 class MainWindow(tk.Tk):
@@ -20,15 +20,15 @@ class MainWindow(tk.Tk):
         out_path: str = os.path.abspath(Conf.config.get('out_path', '999'))
 
         self.out_path = tk.StringVar(value=out_path)
-        self.file_path = tk.StringVar()
-        self.source_system = tk.StringVar(value="DAPP")
+        self.file_path = tk.StringVar(value=Conf.excel_file)
+        # self.source_system = tk.StringVar(value="не используется")
         self.load_mode = tk.StringVar(value="increment")
         self.author = tk.StringVar(value=author)
 
         self.env = Conf.env
 
         self.wm_title("Генератор файлов описания потока")
-        self.geometry("450x470")
+        self.geometry("500x500")
 
         frame = tk.Frame(
             self,       # Обязательный параметр, который указывает окно для размещения Frame.
@@ -59,12 +59,6 @@ class MainWindow(tk.Tk):
         src_cd_entry = ttk.Entry(frame, textvariable=self.out_path, font=("Arial", 10))
         src_cd_entry.pack(fill=tk.X, padx=25)
 
-        label_sys = ttk.Label(frame, text="Режим загрузки", font=("Arial", 10))
-        label_sys.pack(pady=10)
-
-        sys_code = ttk.Combobox(frame, textvariable=self.source_system, values=['DAPP'])
-        sys_code.pack(fill=tk.X, padx=25)
-
         label_load_mode = ttk.Label(frame, text="Принцип загрузки", font=("Arial", 10))
         label_load_mode.pack(pady=10)
 
@@ -77,9 +71,16 @@ class MainWindow(tk.Tk):
         author_entry = ttk.Entry(frame, textvariable=self.author, font=("Arial", 10))
         author_entry.pack(fill=tk.X, padx=25)
 
-        # Журнал работы программы
-        label_log_file = ttk.Label(frame, text=f'Журнал: {Conf.log_file}', font=("Arial", 10))
-        label_log_file.pack(fill=tk.X, padx=25, pady=10)
+        # Дополнительная информация
+        text_info: str = (f'Конфиг:  {Conf.config_file}\n'
+                          f'Шаблоны: {Conf.templates_path}\n'
+                          f'Журнал:  {Conf.log_file}\n'
+                          )
+        self.info_text = tk.StringVar(value=text_info)
+        label_info = tk.Text(frame, font=("Courier New", 10), height=3)
+        label_info.insert(index=tk.END, chars=text_info)
+        label_info.configure(state=tk.DISABLED)
+        label_info.pack(fill=tk.X, padx=25, pady=10)
 
         # Фрейм кнопок
         frame_key = tk.Frame(frame,     # Обязательный параметр, который указывает окно для размещения Frame.
@@ -129,16 +130,18 @@ class MainWindow(tk.Tk):
     def _export_mapping(self):
         msg: str
 
+        if not self.file_path.get():
+            showerror("Ошибка", "EXCEL-файл с описанием данных не выбран")
+            return
+
         if not all((
                 self.file_path.get(),
                 self.out_path.get(),
-                self.source_system.get(),
+                # self.source_system.get(),
                 self.load_mode.get(),
                 self.author.get(),
                 )):
-
-            showerror("Ошибка",
-                      "Проверьте заполнение полей формы")
+            showerror("Ошибка", "Проверьте заполнение полей формы")
         else:
             try:
 
@@ -147,15 +150,22 @@ class MainWindow(tk.Tk):
                 mapping_generator(
                     file_path=self.file_path.get(),
                     out_path=os.path.abspath(self.out_path.get()),
-                    source_system=self.source_system.get(),
+                    # source_system=self.source_system.get(),
                     load_mode=self.load_mode.get(),
                     env=self.env,
                     author=self.author.get()
                 )
 
-                msg = "Файлы потоков сформированы"
-                showinfo("Успешно", msg)
-                logging.info(msg)
+                if Conf.is_warning:
+                    msg = ("Файлы потоков сформированы.\n"
+                           "Прочитайте предупреждения (warning) "
+                           "в журнале работы программы!")
+                    showwarning("Предупреждение", msg)
+                    logging.info("Файлы потоков сформированы с 'предупреждениями'")
+                else:
+                    msg = "Файлы потоков сформированы"
+                    showinfo("Успешно", msg)
+                    logging.info(msg)
 
             except (exp.IncorrectMappingException, ValueError) as err:
                 logging.error(err)
@@ -167,7 +177,7 @@ class MainWindow(tk.Tk):
                 logging.exception("Ошибка чтения шаблона")
                 showerror(title="Ошибка", message=msg)
 
-            except Exception:
-                msg = "Неизвестная ошибка.\nПроверьте журнал работы программы."
-                logging.exception("Неизвестная ошибка")
-                showerror(title="Ошибка", message=msg)
+            # except Exception:
+            #     msg = "Неизвестная ошибка.\nПроверьте журнал работы программы."
+            #     logging.exception("Неизвестная ошибка")
+            #     showerror(title="Ошибка", message=msg)
