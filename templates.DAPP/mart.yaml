@@ -51,3 +51,5 @@ hub_fields:
 {%- else %}
 hub_fields: []
 {%- endif %}
+
+history_field: {{ uni_ctx.hdp_processed }}

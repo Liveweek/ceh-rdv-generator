@@ -91,7 +91,7 @@ mappings:
           on_full_null: {{ hub_field.on_full_null }}
           field_map:
             {{ hub_field.hub_field }}:
-            {%- if hub_field.tgt_type == "TEXT" %}
+            {%- if hub_field.src_type == "string" %}
               type: sql_expression
               value: | 
                 case 

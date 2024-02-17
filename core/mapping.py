@@ -434,7 +434,7 @@ class MartMapping:
         # hub: pd.DataFrame = self.mart_mapping.query("Attr:Conversion_type == 'hub'")
         hub: pd.DataFrame = self.mart_mapping[self.mart_mapping['attr:conversion_type'] == 'hub']
         hub = hub[['tgt_attribute', 'attr:bk_schema', 'attr:bk_object', 'attr:nulldefault', 'src_attr',
-                   'expression', 'tgt_pk', 'tgt_attr_datatype', '_rk']]
+                   'expression', 'tgt_pk', 'tgt_attr_datatype', '_rk', 'src_attr_datatype']]
         hub_list = hub.to_numpy().tolist()
 
         # Проверяем корректность имен
@@ -443,8 +443,12 @@ class MartMapping:
         bk_object_pattern = r"^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$"
 
         ret_list: list = list()
-        # Проверяем соответствие имени таблицы правилам формирования поля short_name
         for hh in hub_list:
+
+            if hh[8] not in ['pk', 'bk']:
+                logging.error(f"Значение поля 'tgt_pk' ('{hh[6]}') для хабов должно содержать значение 'pk' или 'bk'")
+                logging.error(hh)
+                raise IncorrectMappingException("Ошибка в данных EXCEL")
 
             # Значение NaN, которое так "любит" pandas "плохо" воспринимается другими библиотеками
             src_attr: str | None = hh[4] if not pandas.isna(hh[4]) else None
@@ -465,7 +469,8 @@ class MartMapping:
                                                        hub_short_name=None,
                                                        hub_field=None,
                                                        is_bk='true' if hh[8] == 'bk' else 'false',
-                                                       tgt_type=hh[7])
+                                                       tgt_type=hh[7],
+                                                       src_type=hh[9])
 
             h_schema: str
             h_name: str
@@ -497,6 +502,7 @@ class MartMapping:
 
             ret_list.append(hub_ctx)
 
+        ret_list.sort(key=lambda x: x.name)
         return ret_list
 
     def _get_src_table_fields(self) -> list:

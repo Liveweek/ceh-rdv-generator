@@ -47,6 +47,8 @@ class HubFieldContext:
     is_bk: str | None
     # [11] Тип поля в целевой таблице
     tgt_type: str | None
+    # [12] Тип поля в источнике
+    src_type: str | None
 
 
 @dataclass
@@ -121,7 +123,7 @@ class TargetContext(TableContext):
     hub_context: list = field(default_factory=list)
 
     # Список полей hub - таблиц
-    hash_src_fields: set[str] = field(default_factory=list)
+    hash_src_fields: list[str] = field(default_factory=list)
     # Список hub - таблиц
     hub_ctx_list: list[HubFieldContext] = field(default_factory=list)
     distributed_by: str = field(default_factory=str)
@@ -151,13 +153,14 @@ class TargetContext(TableContext):
                              field_ctx.name not in hub_fields}
 
         # Список первичных ключей для опции distributed by
-        self.distributed_by = ','.join({field_ctx.name for field_ctx in self.field_ctx_list
-                                        if field_ctx.pk == "pk" and field_ctx.name not in ignore_distributed_src})
+        self.distributed_by = ','.join(sorted([field_ctx.name for field_ctx in self.field_ctx_list
+                                               if field_ctx.pk == "pk"
+                                               and field_ctx.name not in ignore_distributed_src]))
 
         # Поля, которые не входят в hash
         ignore_list: set = not_null_fields.union(ignore_hash_set)
         # Удаляем поля, которые являются ссылками на hub,  поля not null, поля из списка ignore_hash_set
-        self.hash_src_fields = fields.difference(ignore_list).difference(hub_fields)
+        self.hash_src_fields = sorted(list(fields.difference(ignore_list).difference(hub_fields)))
         return
 
 
@@ -182,6 +185,8 @@ class UniContext:
     actual_dttm_name: str = None
     # Имя поля даты источника, по которому ведется отбор новых записей
     hdp_processed: str = None
+    # Округление даты
+    hdp_processed_conversion: str | None
 
     def __init__(self, source: str, schema: str, table_name: str, src_cd: str, hdp_processed: str,
                  hdp_processed_conversion: str):

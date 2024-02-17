@@ -10,11 +10,7 @@ metadata:
 
   group: general_leader
   imports:
-  {%- if ctx.data_capture_mode == 'increment' %}
     - rdv_cf_uni_template.cf_uni_template
-  {%- else %}
-    - rdv_cf_snapshot_template.cf_snapshot 
-  {%- endif %}
   main_flows:
     - {{ cf_file }}
 flows:

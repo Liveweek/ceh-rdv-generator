@@ -1,6 +1,3 @@
---
--- Внимание!!! Возможно этот скрипт не требуется запускать в Вашем проекте!
---
 CREATE TABLE IF NOT EXISTS {{hub.hub_schema}}.{{hub.hub_name_only}} (
     {{hub.name}} int8 NOT NULL,
     {{hub.hub_field}} text NOT NULL,

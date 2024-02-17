@@ -52,4 +52,4 @@ hub_fields:
 hub_fields: []
 {%- endif %}
 
-history_field: effective_dttm
+history_field: {{ uni_ctx.hdp_processed }}

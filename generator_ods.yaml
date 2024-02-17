@@ -12,7 +12,7 @@ encoding: 'utf-8'
 # Автор проекта. Редактировать здесь.
 #  !!! Во 2 строке отступ обязателен !!!
 anchor_author: &author
-  "Alexey Blagov"
+  "Автор"
 
 # Команда проекта - редактировать здесь
 anchor_team: &team
@@ -127,6 +127,8 @@ setting_up_field_lists:
     - hash_diff
     - invalid_id
     - version_id
+    - deleted_flg
+    - valid_flg
 
   # Список полей с описанием, которые БУДУТ добавлены в секцию field_map шаблона wf.yaml
   # Добавление идет после исключения (список ignore_field_map_ctx_list)
@@ -166,6 +168,7 @@ field_type_list:
 
   # Список предопределенных "связок" поле - тип поля для источника.
   # Используется для контроля заполнения EXCEL.
+  # Поля должны присутствовать!
   src_attr_predefined_datatype: {
   }
 
@@ -179,7 +182,8 @@ field_type_list:
   tgt_attr_name_regexp: "^[a-zA-Z][a-zA-Z0-9_]{0,61}$"
 
   # Список возможных значений колонки "Src_attr_datatype"
-  src_attr_datatype: ['string', 'timestamp', 'bigint', 'decimal', 'date']
+  # Внимание! Фрейм поддерживает ограниченной количество типов.
+  src_attr_datatype: ['string', 'timestamp', 'bigint', 'decimal']
 
   # Список возможных значений колонки "Tgt_attr_datatype"
   tgt_attr_datatype: ['text', 'timestamp', 'char(32)', 'bigint', 'boolean', 'integer', 'decimal', 'date']
@@ -198,6 +202,7 @@ field_type_list:
 # Список имен колонок на листах файла EXCEL, которые должны присутствовать
 # Регистр букв важен!
 # Названия колонок используются в программе, так что менять их без изменения кода нельзя
+# Регистр букв не имеет значения
 excel_data_definition:
   columns: {
     'Детали загрузок Src-RDV': [

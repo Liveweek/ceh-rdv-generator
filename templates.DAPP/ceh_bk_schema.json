@@ -1,6 +1,6 @@
 {
     "resource_cd": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}.{{hub.bk_schema_name}}",
-    "resource_desc": "{Хаб {{hub.hub_name}}",
+    "resource_desc": "Хаб {{hub.hub_name}}",
     "tags": [
 {%- if tags|length > 0 %}
 {%- for tag in tags %}

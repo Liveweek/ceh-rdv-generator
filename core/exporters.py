@@ -111,7 +111,7 @@ class TargetObjectExporter:
 
         # Файл описания март-таблицы
         template = self.env.get_template(self.template_name_yaml)
-        output = template.render(ctx=self.tgt_ctx)
+        output = template.render(ctx=self.tgt_ctx, uni_ctx=self.uni_ctx)
         file_name: str = os.path.join(path, self.tgt_ctx.name + '.yaml')
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(output)

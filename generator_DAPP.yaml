@@ -1,7 +1,7 @@
 # Для источника DAPP и схожих с ним
 
 ########################################################################################################################
-# Файл настроек программы ceh-rdv-generator 
+# Файл настроек программы ceh-rdv-generator
 ########################################################################################################################
 
 # Кодировку файла не менять !!!
@@ -12,7 +12,7 @@ encoding: 'utf-8'
 # Автор проекта. Редактировать здесь.
 #  !!! Во 2 строке отступ обязателен !!!
 anchor_author: &author
-  "Alexey Blagov"
+  "Автор"
 
 # Команда проекта - редактировать здесь
 anchor_team: &team
@@ -24,7 +24,7 @@ anchor_subo: &subo
 
 # Полное название СУБО.
 anchor_subo_name: &subo_name
-  "СУБО Автоматизированная упрощенная система налогообложения (USNS, 1742)"
+  ""
 
 # Предметная область. Редактировать здесь
 anchor_area: &area
@@ -40,7 +40,7 @@ area: *area
 
 # Ссылка на каталог с шаблонами
 # По умолчанию шаблоны берутся из каталога templates, который находится "рядом" с main.py
-templates: E:\GitHub\ceh-rdv-generator\templates.DAPP 
+templates: E:\\GitHub\\ceh-rdv-generator\\templates.DAPP 
 
 # Программа для отображения log-файла. Если строка содержит пробелы, то заключить в двойные кавычки.
 # Работу на linux не проверял ...
@@ -54,10 +54,10 @@ log_file: "generator.log"
 
 # Каталог, в котором будут создаваться подкаталоги потоков
 # Если задан не "абсолютный" путь, то каталог создается "рядом" с файлом main.py
-out_path: "E:\\Projects\\SUBO_1742\tmp"
+out_path: "E:\\Projects\\SUBO_1742\\tmp"
 
 # Имя файла подставляется в диалог выбора
-excel_file: ""
+excel_file: "E:\\Projects\\SUBO_1742\\Маппинг_ЦЕХ_RDV_USNS_v1.1.xlsx "
 
 # Набор строк для секции metadata.tags в файлах потока cf/wf
 # Можно изменить порядок строк, добавить свою строку без переменных
@@ -91,6 +91,8 @@ setting_up_field_lists:
   ignore_hash_set:
     - effective_date
     - effective_dttm
+    - effective_from_dttm
+    - effective_to_dttm
     - hash_diff
     - src_cd
     - version_id
@@ -99,11 +101,14 @@ setting_up_field_lists:
     - invalid_id
     - processed_dt
     - hdp_processed_dttm
+    - processed_dttm
 
   # Список полей, которые НЕ включаются в опцию distributed_by / multi_fields
   ignore_distributed_src:
     - effective_date
     - effective_dttm
+    - effective_from_dttm
+    - effective_to_dttm
     - hash_diff
     - src_cd
     - version_id
@@ -116,21 +121,32 @@ setting_up_field_lists:
   # Список полей целевой таблицы, которые НЕ будут добавлены в секцию field_map шаблона wf.yaml
   # Исключение полей из списка идет ДО добавления полей из секции add_field_map_ctx_list
   ignore_field_map_ctx_list:
+    # - effective_dttm             # Не включать поля, которые присутсвуют в теге tgt_history_field (для ODS)
+    - valid_flg
     - src_cd
     - hash_diff
     - invalid_id
     - version_id
-    - deleted_flg
+    # - deleted_flg
     - valid_flg
 
   # Список полей с описанием, которые БУДУТ добавлены в секцию field_map шаблона wf.yaml
   # Добавление идет после исключения (список ignore_field_map_ctx_list)
   # Если поле уже присутствует в списке полей, то будет инициирована ошибка
   add_field_map_ctx_list:
-    deleted_flg:
-      type: sql_expression
-      value: decode(upper(changetype), 'DELETE', true, false)
-      field_type: BOOLEAN
+#    deleted_flg:
+#      type: sql_expression
+#      value: decode(upper(changetype), 'DELETE', true, false)
+#      field_type: BOOLEAN
+
+  # Определение поля даты источнка по которому будет выполняться фильтрация новых записей 
+  # Имя параметра "hdp_processed%" не несет никакого смысла ... Это просто имя ...
+  hdp_processed: hdp_processed_dttm
+  # Отсечение даты: microseconds,milliseconds,second,minute,hour,day,week,month,quarter,year,decade,,centurymillennium
+  hdp_processed_conversion: second
+ 
+  # Поле историчности в целевой таблице	
+  tgt_history_field: effective_dttm
 
 # Настройки состава/типа/названия полей
 field_type_list:
@@ -156,18 +172,21 @@ field_type_list:
     hdp_processed_dttm: ["timestamp"],
   }
 
+  # Шаблон Кода источника
+  src_cd_regexp: "^='([A-Z_]+)'$"
+
   # Шаблон названия поля в таблице-источнике
-  src_arrt_name_regexp: "^[a-zA-Z][a-zA-Z0-9_\\$]{0,61}$"
+  src_attr_name_regexp: "^[a-zA-Z][a-zA-Z0-9_\\$]*$"
 
   # Шаблон названия поля в целевой таблице
-  tgt_arrt_name_regexp: "^[a-zA-Z][a-zA-Z0-9_]{0,61}$"
+  tgt_attr_name_regexp: "^[a-zA-Z][a-zA-Z0-9_]{0,61}$"
 
   # Список возможных значений колонки "Src_attr_datatype"
   # Внимание! Фрейм поддерживает ограниченной количество типов.
   src_attr_datatype: ['string', 'timestamp', 'bigint', 'decimal']
 
   # Список возможных значений колонки "Tgt_attr_datatype"
-  tgt_attr_datatype: ['text', 'timestamp', 'char(32)', 'bigint', 'boolean', 'integer', 'decimal']
+  tgt_attr_datatype: ['text', 'timestamp', 'char(32)', 'bigint', 'boolean', 'integer', 'decimal', 'date']
 
   # Список "корреспонденций" типов данных источника и целевой таблицы
   # Если "пара" типа данных источника и целевой таблицы (из EXCEL) не найдена в списке, то выдается
@@ -187,7 +206,6 @@ field_type_list:
 excel_data_definition:
   columns: {
     'Детали загрузок Src-RDV': [
-        'Mapping_ver_to',
         'Algorithm_UID',
         'SubAlgorithm_UID',
         'Src_table',
@@ -207,15 +225,26 @@ excel_data_definition:
         'Attr:nulldefault'
     ],
     'Перечень загрузок Src-RDV': [
-        'Algorithm_UID',
-        'SubAlgorithm_UID',
-        'Flow_name',
-        'Tgt_table',
-        'Target_RDV_Object_Type',
-        'Src_table',
-        'Source_name'
+        algorithm_uid,
+        subalgorithm_uid,
+        flow_name,
+        tgt_table,
+        target_rdv_object_type,
+        src_table,
+        source_name,
+        scd_type,
+        algo_name,
+        data_filtering,
+        distribution_field,
+        comment
     ]
   }
+
+# Шаблон названия таблицы-источника
+src_table_name_regexp: "^[a-zA-Z][a-zA-Z0-9_]*\\.[a-zA-Z][a-zA-Z0-9_]*$"
+# Шаблон названия целевой-таблицы
+tgt_table_name_regexp: "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+
 
 # Список потоков в виде шаблонов (в виде regular expression), которые будут обрабатываться (браться из EXCEL)
 # ".+" - все потоки
@@ -224,9 +253,9 @@ excel_data_definition:
 # Корректность имен не проверяется
 # Список нужен для того, что-бы формировать только "свои" потоки из EXCEL - файла маппинга
 wf_templates_list:
-  - ".+"
+#  - ".+"
 #  - "^wf_serv_usns_dapp_rdv_usns_taxemployeepaymentfnsinstruction$"
 #  - "^wf_serv_usns_dapp_rdv_usns_taxoperationpaymentfnsinstruction$"
-#  - "^wf_serv_usns_dapp_rdv_usns_taxpaymentfnsapplication$"
+  - "^wf_serv_usns_dapp_rdv_usns_taxpaymentfnsapplication$"
 
 
