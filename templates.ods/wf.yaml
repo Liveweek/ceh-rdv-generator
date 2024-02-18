@@ -1,0 +1,136 @@
+name: {{ wf_file }}
+type: WORK_FLOW
+schema_version: '1.13'
+version: 1
+tags:
+    {%- for tag in tags %}
+  - {{tag}}
+    {%- endfor %}
+
+orientation: TB
+
+transaction:
+  commit_timeout: 3600
+  resources_lock_attempt_timeout: 60
+  resources_lock_attempts: 30
+
+sources:
+  - short_name: src_tb
+    resource_cd: {{ ctx.source_system.lower() }}.{{ ctx.src_schema.upper() }}.{{ ctx.src_name.upper() }}
+    type: DB_TABLE
+    object: {{ctx.src_name}}
+
+targets:
+
+  - short_name: tgt
+    resource_cd: ceh.rdv.{{ctx.tgt_name}}
+    schema: rdv
+    table: {{ctx.tgt_name}}
+  {% for hub in ctx.hub_ctx_list %}
+  - short_name: {{ hub.hub_short_name }}
+    schema: {{ hub.hub_schema }}
+    table: {{ hub.hub_name_only }}
+    resource_cd: ceh.{{ hub.hub_name }}
+  {% endfor %}
+
+local_metrics:
+
+  wf_dataset_max_date_to:
+    target: stage_T_input
+    query: max({{ uni_ctx.hdp_processed }})
+    on_null: .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema.upper() }}.{{ ctx.src_name.upper() }}".wf_dataset_max_date_to
+
+mappings:
+  marts:
+    - short_name: mart
+      algorithm_uid: {{ ctx.algo }}
+      algorithm_uid_2: {{ ctx.algo_sub }}
+      target: tgt
+      source: src_tb 
+      delta_mode: {{ ctx.delta_mode }}
+
+      where_clause:
+        engine: jq
+        template: {{ uni_ctx.hdp_processed }} >= '{from}' and {{ uni_ctx.hdp_processed }} < '{to}'
+        vars:
+          from: .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema.upper() }}.{{ ctx.src_name.upper() }}".wf_dataset_max_date_to
+          to:   .conf.algos."{{ ctx.algo }}".by_src."{{ ctx.source_system.lower() }}.{{ ctx.src_schema.upper() }}.{{ ctx.src_name.upper() }}".dataset_max_date_to
+
+      metrics:
+        by_src:
+          - save_as: wf_dataset_max_date_to
+            metric:  wf_dataset_max_date_to
+
+      synthetic_history:
+        syn_history_function: rdv.syn_bussiness_date_trunc
+        func_param:
+          - param_source: field
+            param_value: {{ uni_ctx.hdp_processed }}
+          - param_source: const
+            param_value: {{ uni_ctx.hdp_processed_conversion }} 
+
+      history_reducer: ods_reducer
+
+      field_map:
+      {% for field in ctx.field_map_ctx_list %}
+        {{ field.tgt_field }}:
+          type: {{field.type}}
+          value: {{ field.value }}
+          {% if field.field_type != 'NUMERIC' -%}
+          field_type: {{ field.field_type }}
+          {%- endif %}
+      {% endfor %}
+      ref_map: []
+
+{%- if ctx.hub_ctx_list|length > 0 %}
+      hub_map:
+        {% for hub_field in ctx.hub_ctx_list %}
+        - target: {{ hub_field.hub_short_name }}
+          rk_field: {{ hub_field.name }}
+          business_key_schema: {{ hub_field.bk_schema_name }}
+          on_full_null: {{ hub_field.on_full_null }}
+          field_map:
+            {{ hub_field.hub_field }}:
+            {%- if hub_field.src_type == "string" %}
+              type: sql_expression
+              value: | 
+                case 
+                  {% if hub_field.src_attr -%}
+                  when {{ hub_field.src_attr }} = '' then null
+                  else {{ hub_field.src_attr }}
+                  {% else -%}
+                  when {{ hub_field.expression }} = '' then null
+                  else {{ hub_field.expression }}
+                  {% endif -%}
+                end
+              field_type: TEXT
+            {%- else %}
+              {% if hub_field.src_attr -%}
+              type: column
+              value: {{ hub_field.src_attr }}
+              {% else -%}
+              type: sql_expression
+              value: {{ hub_field.expression }}
+              {% endif -%}
+            {% endif -%}
+
+        {% endfor %}
+{%- else %}
+      hub_map: []
+{%- endif %}
+
+history_reducers:
+  ods_reducer:
+    rankers:
+      - direction: desc
+        expression: ods$is_active_flg = '1'
+        field_type: BOOLEAN
+      - direction: desc
+        expression: ods$effective_from_dt
+        field_type: TIMESTAMP
+      - direction: desc
+        expression: ods$processed_dt
+        field_type: TIMESTAMP
+      - direction: desc
+        expression: ods$deleted_flg = '1'
+        field_type: BOOLEAN 

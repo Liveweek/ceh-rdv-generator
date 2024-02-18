@@ -1,0 +1,43 @@
+name: {{hub.hub_name_only}}
+type: HUB
+schema_version: '1.2'
+schema: {{hub.hub_schema}}
+columns:
+  - name: {{ hub.name }}
+    type: BIGINT
+    nullable: false
+  - name: {{ hub.hub_field }}
+    type: VARCHAR
+    nullable: false
+  - name: src_cd
+    type: VARCHAR
+    nullable: false
+  - name: bk_type
+    type: VARCHAR
+    nullable: false
+  - name: invalid_id
+    type: BIGINT
+    nullable: false
+  - name: version_id
+    type: BIGINT
+    nullable: false
+rk_field: {{hub.name}}
+bk_fields:
+  - name: {{hub.hub_field}}
+resource_cd: ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}
+business_key_schemas:
+  - name: {{hub.bk_schema_name}}
+    src_cd: {{values.src_cd}}
+    bk_type: {{hub.name}}_seq
+    fields:
+      - name: {{hub.hub_field}}
+        field_data_quality_checks:
+          - name: IsEmpty
+        field_transform_chains:
+          - name: Cast
+            params:
+              to_type: VARCHAR
+          - name: Coalesce
+            params:
+              value: ~null~
+    split_resource: true

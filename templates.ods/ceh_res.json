@@ -1,0 +1,26 @@
+{
+    "resource_cd": "ceh.{{ ctx.schema }}.{{ ctx.name }}",
+    "resource_desc": "Таблица {{ ctx.schema }}.{{ ctx.name }}",
+    "tags": [
+{%- if tags|length > 0 %}
+{%- for tag in tags %}
+        {{tag}}{%- if not loop.last -%},{% endif -%}
+{%- endfor %}
+{%- endif %}
+    ],
+    "features": {},
+    "datasets": [
+        {
+            "name": "{{ ctx.name }}",
+            "schema_name": "{{ ctx.schema }}"
+        }
+    ],
+    "is_readonly": false,
+     "metrics": {
+        "{{values.actual_dttm_name}}": {
+        "id": "ceh.{{ ctx.schema }}.{{ ctx.name }}:{{values.actual_dttm_name}}",
+        "query": "[.last_sources[].conf.by_src  | select(. != null) | .[] | to_entries | .[] | select((.key | endswith(\"_actual_dttm\")) and .value != \"default_value\" and .value != null).value] | min",
+        "default": "default_value"
+        }
+     }
+}
