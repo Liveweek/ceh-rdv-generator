@@ -4,6 +4,7 @@ from tkinter import ttk, SOLID
 from tkinter.messagebox import showinfo, showerror, showwarning
 from tkinter import filedialog
 import logging
+from tkinter.ttk import Scrollbar
 
 from jinja2 import TemplateNotFound
 
@@ -77,7 +78,7 @@ class MainWindow(tk.Tk):
                           f'Журнал:  {Conf.log_file}\n'
                           )
         self.info_text = tk.StringVar(value=text_info)
-        label_info = tk.Text(frame, font=("Courier New", 10), height=3)
+        label_info = tk.Text(frame, font=("Courier New", 9), height=5)
         label_info.insert(index=tk.END, chars=text_info)
         label_info.configure(state=tk.DISABLED)
         label_info.pack(fill=tk.X, padx=25, pady=10)

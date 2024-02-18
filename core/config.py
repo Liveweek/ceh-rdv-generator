@@ -53,7 +53,7 @@ class Config:
         log_file: str = Config.config.get('log_file', 'generator.log')
         log_file = log_file.strip()
         log_file = 'generator.log' if not log_file else log_file
-        Config.log_file = os.path.join(Path(__file__).parent, log_file)
+        Config.log_file = os.path.join(Path(__file__).parents[1], log_file)
         if os.path.exists(Config.log_file):
             if os.path.isfile(Config.log_file):
                 os.remove(Config.log_file)
