@@ -1,51 +1,57 @@
 import argparse
-from jinja2 import Environment, FileSystemLoader
+import ctypes
+import logging
+import os
+import pathlib
+import tkinter
+
+from core.config import Config
+from core.ui import MainWindow
 
 
-from map_gen import mapping_generator
-from ui import MainWindow
+def main() -> int:
 
+    parser = argparse.ArgumentParser(prog="ceh-rdv-generator")
+    parser.add_argument(
+        "-c", "--config",
+        type=str,
+        default='generator.yaml',
+        help="Файл конфигурации"
+    )
+    args = parser.parse_args()
 
-parser = argparse.ArgumentParser(prog="Конвертер маппинга")
+    # Файл настройки программы.
+    config_name: str = os.path.abspath(args.config)
+    Config.load_config(config_name=config_name)
 
-parser.add_argument(
-    "--ui", 
-    action='store_true',
-    help="Вызов графического интерфейса маппинга"
-)
-parser.add_argument(
-    "--src_cd", 
-    help="Код источника маппинга, используется для создания папки с соответствующим наименованием"
-)
-parser.add_argument(
-    "--path",
-    help="Полный путь к файлу маппинга"
-)
-parser.add_argument(
-    "--load",
-    help="Режим загрузки"
-)
-parser.add_argument("--sys", default="DAPP")
-parser.add_argument(
-    "--author",
-    help="Название автора потоков"
-)
+    logging.basicConfig(level=logging.INFO, filename=Config.log_file, filemode="w",
+                        format="%(asctime)s %(levelname)s %(message)s",
+                        encoding='utf-8')
+
+    print(f"config={config_name}")
+    print(f"log_file={Config.log_file}")
+
+    logging.info('START')
+    logging.info(f"config={config_name}")
+    logging.info(f"log_file={Config.log_file}")
+    logging.info(f'templates_path="{Config.templates_path}"')
+
+    win = MainWindow()
+
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("VTB.ceh.ceh-rdv-generator.1_0")
+    resource_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'res')
+    win.iconbitmap(os.path.join(resource_path, "ceh-icon.ico"))
+    image = tkinter.PhotoImage(file=os.path.join(resource_path, "ceh-icon.png"))
+    win.iconphoto(True, image)
+
+    win.mainloop()
+
+    logging.info('STOP')
+    return 0
 
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    env = Environment(loader=FileSystemLoader('templates'))
-    
-    if args.ui:
-        win = MainWindow(env=env)
-        win.mainloop()
-        
-    else:
-        mapping_generator(
-            file_path=args.path,
-            src_cd=args.src_cd,
-            load_mode=args.load,
-            sys=args.sys,
-            env=env,
-            author=args.author
-        )
+    exit_code = main()
+    exit(exit_code)
+else:
+    exit(100)

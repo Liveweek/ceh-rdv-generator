@@ -1,0 +1,63 @@
+{
+    "resource_cd": "ceh.{{hub.hub_schema}}.{{hub.hub_name_only}}.{{hub.bk_schema_name}}",
+    "resource_desc": "Хаб {{hub.hub_name}}",
+    "tags": [
+{%- if tags|length > 0 %}
+{%- for tag in tags %}
+        {{tag}}{%- if not loop.last -%},{% endif -%}
+{%- endfor %}
+{%- endif %}
+    ],
+    "features": {
+        "domain": "{{hub.hub_schema}}"
+    },
+    "configuration": null,
+    "is_readonly": false,
+    "status": "active",
+    "datasets": [
+        {
+            "name": "{{hub.hub_name_only}}",
+            "schema_name": "{{hub.hub_schema}}",
+            "filter": "",
+            "columns": [
+                {
+                    "name": "src_cd",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "version_id",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "invalid_id",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "bk_type",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "{{hub.hub_field}}",
+                    "type": "text",
+                    "primary_key": false,
+                    "nullable": false
+                },
+                {
+                    "name": "{{hub.name}}",
+                    "type": "bigint",
+                    "primary_key": false,
+                    "nullable": false
+                }
+            ],
+            "physical_options": ""
+        }
+    ]
+}

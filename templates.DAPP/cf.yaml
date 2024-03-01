@@ -1,0 +1,36 @@
+schema_version: 2.0
+metadata:
+  author: {{ author }}
+  version: "1.0"
+  description: Управляющий поток
+  tags:
+    {%- for tag in tags %}
+    - {{tag}}
+    {%- endfor %}
+
+  group: general_leader
+  imports:
+    - rdv_cf_uni_template.cf_uni_template
+  main_flows:
+    - {{ cf_file }}
+flows:
+  - id: {{ cf_file }}
+    description: Управляющий поток {{ wf_file  }}
+    builder: ceh_core_idl.app.builders.simple_flow_builder
+    tasks:
+      - id: run_{{ wf_file }}
+        builder: ceh_core_idl.app.builders.include_flow_builder
+        properties:
+    {% if ctx.data_capture_mode == 'increment' %}
+          ref: cf_uni_template
+    {% else %}
+          ref: cf_snapshot
+    {% endif %}
+          properties:
+            mode: ANY
+            work_flow_id: {{ wf_file  }}
+            actual_dttm_prefix: {{ ctx.src_cd.lower() }}
+            algos_map:
+              {{ ctx.algo }}: 
+                - uni: {{ uni_ctx.resource_cd }}
+                  ceh: ceh.rdv.{{ ctx.tgt_name }}
